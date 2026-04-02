@@ -30,3 +30,10 @@ export async function fetchLiveQueue() {
   const liveQueue = await controller.getLiveQueue();
   return liveQueue;
 }
+export async function completePayment(
+  requestIds: number[],
+  operatorName: string,
+) {
+  const controller = await createRequestsController();
+  await controller.completePayment(requestIds, operatorName);
+}

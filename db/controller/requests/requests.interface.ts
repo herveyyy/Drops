@@ -7,4 +7,5 @@ export interface IRequests {
     items: Omit<InsertRequestItem, "requestId">[],
   ): Promise<SelectRequest>;
   getLiveQueue(): Promise<unknown>;
+  completePayment(requestIds: number[], operatorName: string): Promise<void>;
 }

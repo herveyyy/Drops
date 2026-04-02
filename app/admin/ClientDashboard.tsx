@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SelectGuest } from "@/lib/types/guest.types";
 import { getFilesByGuestId } from "@/app/actions/file.actions";
+import { QueueItem } from "@/lib/types/request.types";
+import { completePayment } from "@/app/actions/request.actions";
 import AdminNavbar from "./AdminNavbar";
 
 interface ClientFile {
@@ -25,14 +27,8 @@ interface CartItem {
   price: number;
 }
 
-interface QueueItem {
-  id: number;
-  status: string;
-  totalAmount: number;
-  guestName: string;
-  fileName: string;
-  mimeType: string;
-  params: string | null;
+interface CartQueueItem extends QueueItem {
+  editablePrice: number;
 }
 
 interface ClientDashboardProps {
@@ -51,11 +47,28 @@ export default function ClientDashboard({
   );
   const [guestFiles, setGuestFiles] = useState<ClientFile[]>([]);
   const [loading, setLoading] = useState(false);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartQueueItem[]>([]);
   const [liveQueueState, setLiveQueueState] = useState<QueueItem[]>(queueItems);
+
+  useEffect(() => {
+    if (selectedGuest) {
+      const guestQueue = liveQueueState.filter(
+        (item) => item.guestName === selectedGuest.name,
+      );
+      setCart(
+        guestQueue.map((item) => ({
+          ...item,
+          editablePrice: item.totalAmount,
+        })),
+      );
+    } else {
+      setCart([]);
+    }
+  }, [selectedGuest, liveQueueState]);
 
   const handleExecuteQueue = (id: number) => {
     setLiveQueueState((prev) => prev.filter((item) => item.id !== id));
+    setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
   const handleGuestSelect = async (guest: SelectGuest) => {
@@ -70,50 +83,45 @@ export default function ClientDashboard({
     } finally {
       setLoading(false);
     }
+    // Populate cart with guest's queue items
+    const guestQueue = liveQueueState.filter(
+      (item) => item.guestName === guest.name,
+    );
+    setCart(
+      guestQueue.map((item) => ({ ...item, editablePrice: item.totalAmount })),
+    );
   };
 
-  const addToCart = (product: Product) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.productId === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.productId === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
-        );
-      }
-      return [
-        ...prev,
-        {
-          productId: product.id,
-          productName: product.name,
-          quantity: 1,
-          price: product.price,
-        },
-      ];
-    });
+  const updateCartPrice = (id: number, newPrice: number) => {
+    setCart((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, editablePrice: newPrice } : item,
+      ),
+    );
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart((prev) => prev.filter((item) => item.productId !== productId));
-  };
-
-  const updateQuantity = (productId: number, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-    } else {
-      setCart((prev) =>
-        prev.map((item) =>
-          item.productId === productId ? { ...item, quantity } : item,
-        ),
+  const handleConfirmPayment = async () => {
+    const operatorName = window.prompt("Enter operator name for transparency:");
+    if (!operatorName || operatorName.trim() === "") {
+      alert("Operator name is required.");
+      return;
+    }
+    try {
+      const requestIds = cart.map((item) => item.id);
+      await completePayment(requestIds, operatorName.trim());
+      // Clear cart and update queue
+      setCart([]);
+      setLiveQueueState((prev) =>
+        prev.filter((item) => !requestIds.includes(item.id)),
       );
+      alert("Payment completed successfully.");
+    } catch (error) {
+      console.error("Failed to complete payment:", error);
+      alert("Failed to complete payment. Please try again.");
     }
   };
 
-  const cartTotal = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
-  );
+  const cartTotal = cart.reduce((sum, item) => sum + item.editablePrice, 0);
 
   const liveQueue = selectedGuest
     ? liveQueueState.filter((item) => item.guestName === selectedGuest.name)
@@ -126,37 +134,7 @@ export default function ClientDashboard({
         <div className="flex h-[calc(100vh-64px)] overflow-hidden">
           {/* LEFT PANE */}
           <aside className="w-72 bg-[#070707] border-r border-[#111] p-6 flex flex-col overflow-y-auto">
-            <div className="mb-8">
-              <h1 className="text-2xl font-black uppercase tracking-wider">
-                OPERATOR_01
-              </h1>
-              <p className="text-[9px] text-[#777] tracking-widest uppercase">
-                SECTOR_BLACK
-              </p>
-            </div>
-
-            <nav className="flex flex-col gap-2 text-[10px] tracking-[0.2em] uppercase">
-              {[
-                { label: "Active_Queue", active: true },
-                { label: "Archive", active: false },
-                { label: "Inventory", active: false },
-                { label: "Reports", active: false },
-                { label: "System", active: false },
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  className={`w-full text-left p-3 rounded-sm transition-colors ${
-                    item.active
-                      ? "bg-white text-black font-bold"
-                      : "text-[#888] hover:text-white hover:bg-[#111]"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-
-            <div className="mt-6 border-t border-[#111] pt-4">
+            <div className="">
               <h2 className="text-[10px] tracking-[0.3em] uppercase text-[#888] mb-3">
                 Guest_List
               </h2>
@@ -265,30 +243,6 @@ export default function ClientDashboard({
               <span className="text-[#666]">SEARCH_DB</span>
             </div>
 
-            <div className="space-y-3 mb-6 flex-1 overflow-y-auto">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="bg-[#090909] border border-[#222] p-3 flex items-center justify-between"
-                >
-                  <div>
-                    <p className="text-[10px] uppercase font-bold">
-                      {product.name}
-                    </p>
-                    <p className="text-[9px] text-[#888]">
-                      ₱{(product.price / 100).toFixed(2)}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => addToCart(product)}
-                    className="px-2 py-1 text-xs uppercase border border-[#444] hover:border-white transition-colors"
-                  >
-                    +
-                  </button>
-                </div>
-              ))}
-            </div>
-
             <div className="border-t border-[#222] pt-4">
               <div className="text-[10px] uppercase text-[#888] tracking-widest mb-2 flex justify-between">
                 <span>Active_Basket</span>
@@ -301,15 +255,22 @@ export default function ClientDashboard({
                 ) : (
                   cart.map((item) => (
                     <div
-                      key={item.productId}
-                      className="flex justify-between items-center text-[9px]"
+                      key={item.id}
+                      className="flex justify-between items-center text-[9px] gap-2"
                     >
-                      <span>
-                        {item.productName} x{item.quantity}
+                      <span className="flex-1 truncate">
+                        {item.fileName || "Unnamed"}
                       </span>
-                      <span>
-                        ₱{((item.price * item.quantity) / 100).toFixed(2)}
-                      </span>
+                      <input
+                        type="number"
+                        value={(item.editablePrice / 100).toFixed(2)}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) * 100;
+                          updateCartPrice(item.id, isNaN(value) ? 0 : value);
+                        }}
+                        className="w-16 bg-[#111] border border-[#333] text-[9px] px-1 py-0.5 text-right"
+                        step="0.01"
+                      />
                     </div>
                   ))
                 )}
@@ -326,6 +287,7 @@ export default function ClientDashboard({
                 </div>
                 <button
                   disabled={cart.length === 0}
+                  onClick={handleConfirmPayment}
                   className="w-full bg-black text-white py-3 text-[10px] uppercase font-bold hover:bg-[#111] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Confirm_Payment

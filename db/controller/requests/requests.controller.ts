@@ -29,4 +29,19 @@ export class RequestsController implements IRequests {
       throw new Error("Failed to fetch live queue");
     }
   }
+
+  async completePayment(
+    requestIds: number[],
+    operatorName: string,
+  ): Promise<void> {
+    try {
+      return await this.requestService.completePayment(
+        requestIds,
+        operatorName,
+      );
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to complete payment");
+    }
+  }
 }
