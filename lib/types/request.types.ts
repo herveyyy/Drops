@@ -12,7 +12,13 @@ export interface QueueItem {
   status: string;
   totalAmount: number;
   guestName: string;
-  fileName: string;
-  mimeType: string;
-  params: string | null;
+  fileId?: number | null;
+  fileName?: string | null;
+  filePath?: string | null;
+  mimeType?: string | null;
+  params?: string | null;
+  productName?: string | null;
+  productPrice?: number | null;
+  quantity?: number | null;
+  itemType: "file" | "product";
 }

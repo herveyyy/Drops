@@ -1,4 +1,8 @@
-import { SelectRequest, InsertRequestItem } from "@/lib/types/request.types";
+import {
+  SelectRequest,
+  InsertRequestItem,
+  QueueItem,
+} from "@/lib/types/request.types";
 
 export interface IRequests {
   createRequest(
@@ -6,6 +10,6 @@ export interface IRequests {
     totalAmount: number,
     items: Omit<InsertRequestItem, "requestId">[],
   ): Promise<SelectRequest>;
-  getLiveQueue(): Promise<unknown>;
+  getLiveQueue(): Promise<QueueItem[]>;
   completePayment(requestIds: number[], operatorName: string): Promise<void>;
 }

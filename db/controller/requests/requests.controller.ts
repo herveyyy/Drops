@@ -1,5 +1,9 @@
 import { RequestService } from "@/db/service/request.service";
-import { SelectRequest, InsertRequestItem } from "@/lib/types/request.types";
+import {
+  SelectRequest,
+  InsertRequestItem,
+  QueueItem,
+} from "@/lib/types/request.types";
 import { IRequests } from "./requests.interface";
 
 export class RequestsController implements IRequests {
@@ -21,7 +25,7 @@ export class RequestsController implements IRequests {
       throw new Error("Failed to create request");
     }
   }
-  async getLiveQueue(): Promise<unknown> {
+  async getLiveQueue(): Promise<QueueItem[]> {
     try {
       return await this.requestService.getLiveQueue();
     } catch (error) {

@@ -208,15 +208,25 @@ export default function ClientDashboard({
                   >
                     <div className="flex gap-5 items-center flex-1">
                       <div className="w-12 h-12 bg-[#111] border border-[#333] flex items-center justify-center uppercase text-[10px] text-[#999]">
-                        {(item.mimeType || "").split("/")[1] || "DATA"}
+                        {item.itemType === "file"
+                          ? (item.mimeType || "").split("/")[1] || "FILE"
+                          : "PRD"}
                       </div>
                       <div>
-                        <h3 className="text-xl font-black uppercase tracking-tight break-words">
-                          {item.fileName || "Unnamed"}
+                        <h3 className="text-xl font-black uppercase tracking-tight wrap-break-word">
+                          {item.itemType === "file"
+                            ? item.fileName || "Unnamed File"
+                            : item.productName || "Unnamed Product"}
                         </h3>
                         <div className="text-[9px] text-[#777] mt-1">
-                          Source: {item.guestName || "-"} | Params:{" "}
-                          {item.params || "A1 // GLOSS // 200GSM"}
+                          Source: {item.guestName || "-"} | Type:{" "}
+                          {item.itemType.toUpperCase()}
+                          {item.itemType === "file" && item.params
+                            ? ` | Params: ${item.params}`
+                            : ""}
+                          {item.itemType === "product" && item.quantity != null
+                            ? ` | Qty: ${item.quantity}`
+                            : ""}
                         </div>
                       </div>
                     </div>
@@ -233,6 +243,30 @@ export default function ClientDashboard({
                       >
                         Execute_Quote
                       </button>
+                      {item.itemType === "file" && item.fileId && (
+                        <div className="mt-2 flex gap-2">
+                          <a
+                            href={`/api/files/${item.fileId}/download`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-3 py-1 text-[10px] border border-[#999] hover:bg-[#999] hover:text-black transition-colors"
+                          >
+                            DOWNLOAD_FILE
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              window.open(
+                                `/api/files/${item.fileId}/download?inline=1`,
+                                "_blank",
+                              )
+                            }
+                            className="px-3 py-1 text-[10px] border border-[#999] hover:bg-[#999] hover:text-black transition-colors"
+                          >
+                            PRINT_FILE
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
@@ -259,13 +293,15 @@ export default function ClientDashboard({
                 {cart.length === 0 ? (
                   <p className="text-[#666] text-[9px]">Cart empty</p>
                 ) : (
-                  cart.map((item) => (
+                  cart.map((item, idx) => (
                     <div
-                      key={item.id}
+                      key={`${item.id}-${idx}`}
                       className="flex justify-between items-center text-[9px] gap-2"
                     >
                       <span className="flex-1 truncate">
-                        {item.fileName || "Unnamed"}
+                        {item.itemType === "file"
+                          ? item.fileName || "Unnamed File"
+                          : item.productName || "Unnamed Product"}
                       </span>
                       <input
                         type="number"
