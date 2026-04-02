@@ -7,10 +7,7 @@ export class CreateGuestUsecase {
 
   async execute(data: InsertGuest): Promise<SelectGuest> {
     try {
-      const result = await this.db
-        .insert(guests)
-        .values(data)
-        .returning();
+      const result = await this.db.insert(guests).values(data).returning();
 
       return result[0];
     } catch (error) {

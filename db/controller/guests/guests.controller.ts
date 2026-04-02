@@ -23,6 +23,15 @@ export class GuestsController implements IGuests {
     }
   }
 
+  async getGuestsWithRequestsToday(): Promise<SelectGuest[]> {
+    try {
+      return await this.guestService.getGuestsWithRequestsToday();
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to get guests with requests today");
+    }
+  }
+
   async getAllGuests(): Promise<SelectGuest[]> {
     try {
       return await this.guestService.getAllGuests();

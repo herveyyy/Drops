@@ -1,13 +1,15 @@
 import { CreateGuestUsecase } from "../usecase/guest/create_guest.usecase";
 import { GetGuestByIdUsecase } from "../usecase/guest/get_guest_by_id.usecase";
+import { GetGuestsWithRequestsTodayUsecase } from "../usecase/guest/get_guests_with_requests_today.usecase";
+import { GetAllGuestsUsecase } from "../usecase/guest/get_all_guests.usecase";
 import { InsertGuest, SelectGuest } from "@/lib/types/guest.types";
-import { db } from "@/db";
-import { guests } from "@/db/schema";
 
 export class GuestService {
   constructor(
     private readonly createGuestUsecase: CreateGuestUsecase,
     private readonly getGuestByIdUsecase: GetGuestByIdUsecase,
+    private readonly getGuestsWithRequestsTodayUsecase: GetGuestsWithRequestsTodayUsecase,
+    private readonly getAllGuestsUsecase: GetAllGuestsUsecase,
   ) {}
 
   async createGuest(data: InsertGuest): Promise<SelectGuest> {
@@ -18,7 +20,11 @@ export class GuestService {
     return this.getGuestByIdUsecase.execute(id);
   }
 
+  async getGuestsWithRequestsToday(): Promise<SelectGuest[]> {
+    return this.getGuestsWithRequestsTodayUsecase.execute();
+  }
+
   async getAllGuests(): Promise<SelectGuest[]> {
-    return db.select().from(guests).orderBy(guests.id);
+    return this.getAllGuestsUsecase.execute();
   }
 }

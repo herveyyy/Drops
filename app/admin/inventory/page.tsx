@@ -1,10 +1,9 @@
-import { db } from "@/db";
-import { products } from "@/db/schema";
+import { getAllProducts } from "@/app/actions/product.actions";
 import Link from "next/link";
 import AdminNavbar from "../AdminNavbar";
 
 export default async function InventoryPage() {
-  const productList = await db.select().from(products);
+  const productList = await getAllProducts();
 
   return (
     <>

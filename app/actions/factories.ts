@@ -5,6 +5,8 @@ import { UserService } from "@/db/service/user.service";
 import { GuestsController } from "@/db/controller/guests/guests.controller";
 import { CreateGuestUsecase } from "@/db/usecase/guest/create_guest.usecase";
 import { GetGuestByIdUsecase } from "@/db/usecase/guest/get_guest_by_id.usecase";
+import { GetGuestsWithRequestsTodayUsecase } from "@/db/usecase/guest/get_guests_with_requests_today.usecase";
+import { GetAllGuestsUsecase } from "@/db/usecase/guest/get_all_guests.usecase";
 import { GuestService } from "@/db/service/guest.service";
 
 import { FilesController } from "@/db/controller/files/files.controller";
@@ -14,6 +16,7 @@ import { FileService } from "@/db/service/file.service";
 
 import { ProductsController } from "@/db/controller/products/products.controller";
 import { GetAvailableProductsUsecase } from "@/db/usecase/product/get_available_products.usecase";
+import { GetAllProductsUsecase } from "@/db/usecase/product/get_all_products.usecase";
 import { ProductService } from "@/db/service/product.service";
 
 import { RequestsController } from "@/db/controller/requests/requests.controller";
@@ -28,7 +31,12 @@ export async function createUserController(): Promise<UsersController> {
 
 export async function createGuestsController(): Promise<GuestsController> {
   return new GuestsController(
-    new GuestService(new CreateGuestUsecase(), new GetGuestByIdUsecase()),
+    new GuestService(
+      new CreateGuestUsecase(),
+      new GetGuestByIdUsecase(),
+      new GetGuestsWithRequestsTodayUsecase(),
+      new GetAllGuestsUsecase(),
+    ),
   );
 }
 
@@ -40,7 +48,10 @@ export async function createFilesController(): Promise<FilesController> {
 
 export async function createProductsController(): Promise<ProductsController> {
   return new ProductsController(
-    new ProductService(new GetAvailableProductsUsecase()),
+    new ProductService(
+      new GetAvailableProductsUsecase(),
+      new GetAllProductsUsecase(),
+    ),
   );
 }
 

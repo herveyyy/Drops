@@ -1,13 +1,12 @@
-import { getAllGuests } from "@/app/actions/guest.actions";
+import { getGuestsWithRequestsToday } from "@/app/actions/guest.actions";
 import { fetchLiveQueue } from "@/app/actions/request.actions";
-import { db } from "@/db";
-import { products } from "@/db/schema";
+import { getAllProducts } from "@/app/actions/product.actions";
 import ClientDashboard from "../ClientDashboard";
 
 export default async function LiveQueueDashboard() {
-  const guests = await getAllGuests();
+  const guests = await getGuestsWithRequestsToday();
   const queueItems = await fetchLiveQueue();
-  const productList = await db.select().from(products);
+  const productList = await getAllProducts();
 
   return (
     <ClientDashboard

@@ -6,3 +6,8 @@ export async function getAvailableProducts() {
   const controller = await createProductsController();
   return controller.getAvailableProducts();
 }
+
+export async function getAllProducts() {
+  const controller = await createProductsController();
+  return controller.getAllProducts();
+}

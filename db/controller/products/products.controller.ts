@@ -13,4 +13,13 @@ export class ProductsController implements IProducts {
       throw new Error("Failed to get available products");
     }
   }
+
+  async getAllProducts(): Promise<SelectProduct[]> {
+    try {
+      return await this.productService.getAllProducts();
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to get all products");
+    }
+  }
 }
