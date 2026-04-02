@@ -1,65 +1,103 @@
-import Image from "next/image";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default function TerminalInit() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <form 
+      className="min-h-[100dvh] bg-[#070707] text-white font-mono flex flex-col relative overflow-hidden" 
+      action={async (formData) => {
+        "use server";
+        console.log("Onboarding:", formData.get("subject_name"));
+        redirect("/upload");
+      }}
+    >
+      {/* Top Bar */}
+      <header className="flex justify-between items-center p-5 sm:p-8 text-[10px] sm:text-[11px] text-[#666] tracking-[0.2em] font-bold uppercase">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white sm:w-[18px] sm:h-[18px]">
+            <polyline points="4 17 10 11 4 5"></polyline>
+            <line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
+          <span className="text-white hidden sm:inline-block">DROPS_NETWORK</span>
+          <span className="text-white sm:hidden">DROPS</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="opacity-80">GUEST_PORTAL</div>
+      </header>
+
+      {/* Main Centered Content */}
+      <div className="flex-1 flex flex-col items-center justify-center -mt-10 sm:-mt-20 px-5 sm:px-8">
+        <div className="max-w-[760px] w-full flex flex-col gap-8 sm:gap-12">
+          
+          {/* Header Block */}
+          <div className="flex flex-col gap-4 sm:gap-5">
+            <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-[11px] font-bold text-[#888] tracking-[0.3em] uppercase">
+              <div className="w-8 sm:w-12 h-[2px] bg-[#888]"></div>
+              WELCOME_PROTOCOL
+            </div>
+            
+            <h1 className="text-4xl sm:text-[4.5rem] font-black tracking-tighter text-white uppercase m-0 leading-[1.1] break-words">
+              WELCOME_TO_<br className="sm:hidden" />DROPS
+            </h1>
+            
+            <p className="text-[#888] text-xs sm:text-base leading-relaxed tracking-wider mt-1 sm:mt-2 max-w-[540px]">
+              Please enter your name to connect to our local network. We will use this to remember your device and personalize your experience in the shop today.
+            </p>
+          </div>
+
+          {/* Form Input Block */}
+          <div className="flex flex-col gap-2 relative mt-4 sm:mt-8">
+            <label className="text-[9px] sm:text-[10px] text-[#444] font-bold tracking-[0.2em] uppercase mb-1 sm:mb-2">
+              YOUR_FIRST_NAME
+            </label>
+            
+            <div className="relative border-b border-[#222] pb-3 sm:pb-4 flex items-center">
+              <input 
+                type="text" 
+                name="subject_name"
+                placeholder="ENTER NAME..." 
+                className="w-full bg-transparent text-3xl sm:text-5xl font-bold uppercase tracking-[0.1em] text-white placeholder-[#1a1a1a] focus:outline-none"
+                required
+              />
+              {/* Hide "CMD ENTER" hint on mobile since keyboards don't apply */}
+              <div className="absolute right-0 hidden sm:flex items-center gap-2 text-[#333] text-[10px] tracking-widest font-bold">
+                <span>⌘ ENTER</span>
+              </div>
+            </div>
+            {/* Input Decorative Underlines */}
+            <div className="flex gap-2 sm:gap-4 mt-2">
+               <div className="w-8 sm:w-16 h-[2px] bg-[#222]"></div>
+               <div className="w-8 sm:w-16 h-[2px] bg-[#222]"></div>
+            </div>
+          </div>
+
         </div>
-      </main>
-    </div>
+      </div>
+
+      {/* Bottom Footer Overlay */}
+      <div className="absolute bottom-0 left-0 w-full p-5 sm:p-8 flex justify-end sm:justify-between items-end pointer-events-none">
+        
+        {/* Bottom Left Tech Info (Hidden on Mobile for minimalist view) */}
+        <div className="hidden sm:flex flex-col gap-1.5 text-[10px] text-[#444] tracking-[0.15em] font-bold uppercase">
+          <p>LOCATION: DROPS_HQ</p>
+          <p>STATUS: ONLINE_&_READY</p>
+          <p>NETWORK: SECURE_CONNECTION</p>
+        </div>
+
+        {/* Bottom Right Continue Button */}
+        <div className="relative pointer-events-auto group w-full sm:w-auto">
+          {/* Decorative Corner Brackets */}
+          <div className="absolute -top-[6px] -left-[6px] w-[10px] h-[10px] border-t-2 border-l-2 border-[#555] transition-colors duration-300 group-hover:border-white"></div>
+          <div className="absolute -bottom-[6px] -left-[6px] w-[10px] h-[10px] border-b-2 border-l-2 border-[#555] transition-colors duration-300 group-hover:border-white"></div>
+          <div className="absolute -top-[6px] -right-[6px] w-[10px] h-[10px] border-t-2 border-r-2 border-[#555] transition-colors duration-300 group-hover:border-white"></div>
+          <div className="absolute -bottom-[6px] -right-[6px] w-[10px] h-[10px] border-b-2 border-r-2 border-[#555] transition-colors duration-300 group-hover:border-white"></div>
+          
+          {/* Full width on very tiny screens, auto width on larger */}
+          <button type="submit" className="w-full sm:w-auto bg-white text-black font-bold uppercase text-[12px] sm:text-[13px] tracking-[0.2em] px-8 sm:px-10 py-4 sm:py-5 flex items-center justify-center gap-3 sm:gap-4 hover:bg-[#ccc] transition-colors cursor-pointer outline-none">
+            CONTINUE
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
+        </div>
+
+      </div>
+    </form>
   );
 }
