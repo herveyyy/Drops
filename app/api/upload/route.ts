@@ -1,6 +1,9 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { createFilesController, createGuestsController } from "@/app/actions";
+import {
+  createFilesController,
+  createGuestsController,
+} from "@/app/actions/factories";
 import path from "path";
 import fs from "fs/promises";
 
@@ -11,10 +14,10 @@ const ALLOWED_MIME_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
-  "application/postscript", // .ai files
+  "application/postscript",
 ];
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
   try {

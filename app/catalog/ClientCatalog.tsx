@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import type { SelectProduct } from "@/lib/types/product.types";
 import type { SelectFile } from "@/lib/types/file.types";
-import { submitOrderRequest } from "@/app/actions";
+import { submitOrderRequest } from "@/app/actions/request.actions";
 
 interface ClientCatalogProps {
   guestName: string;
@@ -30,7 +30,6 @@ export default function ClientCatalog({
 }: ClientCatalogProps) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showReceipt, setShowReceipt] = useState(false);
-  const [showFileSelect, setShowFileSelect] = useState<number | null>(null); // product id
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -40,7 +39,11 @@ export default function ClientCatalog({
   );
 
   const addToCart = useCallback(
-    (product: SelectProduct, fileId: number | null, fileName: string | null) => {
+    (
+      product: SelectProduct,
+      fileId: number | null,
+      fileName: string | null,
+    ) => {
       setCart((prev) => {
         const existing = prev.find(
           (i) => i.product.id === product.id && i.fileId === fileId,
@@ -54,7 +57,6 @@ export default function ClientCatalog({
         }
         return [...prev, { product, quantity: 1, fileId, fileName }];
       });
-      setShowFileSelect(null);
     },
     [],
   );
@@ -89,7 +91,16 @@ export default function ClientCatalog({
       <div className="min-h-screen bg-[#050505] text-white font-mono flex flex-col items-center justify-center p-8 gap-8">
         <div className="border border-[#333] bg-[#0a0a0a] max-w-lg w-full p-10 flex flex-col items-center gap-6 text-center">
           <div className="border border-[#333] w-16 h-16 flex items-center justify-center text-[#0f0]">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
           </div>
@@ -126,7 +137,7 @@ export default function ClientCatalog({
         </div>
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="hidden sm:flex items-center gap-2 border border-[#222] px-3 py-1.5 bg-[#000]">
-            <span className="w-1.5 h-1.5 bg-[#fff] rounded-full animate-pulse"></span>
+            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
             <span className="text-[9px] tracking-widest uppercase font-bold text-[#aaa]">
               {guestName.toUpperCase()}
             </span>
@@ -135,7 +146,7 @@ export default function ClientCatalog({
             <button
               type="button"
               onClick={() => setShowReceipt(true)}
-              className="border border-[#fff] bg-white text-black px-4 sm:px-6 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-transparent hover:text-white transition-colors cursor-pointer"
+              className="border border-white bg-white text-black px-4 sm:px-6 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-transparent hover:text-white transition-colors cursor-pointer"
             >
               VIEW_RECEIPT ({cart.length})
             </button>
@@ -177,7 +188,8 @@ export default function ClientCatalog({
                     {product.name.toUpperCase().replace(/\s/g, "_")}
                   </span>
                   <span className="text-[10px] text-[#888] tracking-widest font-bold">
-                    {formatPrice(product.price)} // {product.specs ?? "STANDARD"}
+                    {formatPrice(product.price)} //{" "}
+                    {product.specs ?? "STANDARD"}
                   </span>
                   {product.description && (
                     <span className="text-[9px] text-[#555] tracking-wider leading-relaxed mt-1">
@@ -189,54 +201,11 @@ export default function ClientCatalog({
                 {/* Action button */}
                 <button
                   type="button"
-                  onClick={() => {
-                    if (guestFiles.length > 0) {
-                      setShowFileSelect(product.id);
-                    } else {
-                      addToCart(product, null, null);
-                    }
-                  }}
+                  onClick={() => addToCart(product, null, null)}
                   className="border border-white p-3 text-xs font-bold tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-colors w-full cursor-pointer touch-manipulation bg-transparent text-white"
                 >
-                  ADD_TO_REQUEST
+                  ADD_TO_CART
                 </button>
-
-                {/* File select dropdown */}
-                {showFileSelect === product.id && (
-                  <div className="absolute inset-0 bg-[#0a0a0a]/95 z-20 flex flex-col p-6 gap-3 border border-white">
-                    <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white">
-                      ATTACH_FILE:
-                    </span>
-                    <div className="flex flex-col gap-2 flex-1 overflow-y-auto max-h-48">
-                      {guestFiles.map((file) => (
-                        <button
-                          key={file.id}
-                          type="button"
-                          onClick={() =>
-                            addToCart(product, file.id, file.filename)
-                          }
-                          className="border border-[#333] p-3 text-[10px] font-bold tracking-[0.15em] uppercase text-left hover:border-white hover:text-white transition-colors text-[#aaa] bg-transparent cursor-pointer"
-                        >
-                          {file.filename.toUpperCase().replace(/\s/g, "_")}
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => addToCart(product, null, null)}
-                      className="border border-[#444] p-2 text-[9px] font-bold tracking-[0.2em] uppercase text-[#888] hover:text-white hover:border-white transition-colors mt-2 bg-transparent cursor-pointer"
-                    >
-                      SKIP_FILE_ATTACH
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowFileSelect(null)}
-                      className="text-[9px] font-bold tracking-[0.2em] uppercase text-[#555] hover:text-white transition-colors bg-transparent border-none cursor-pointer"
-                    >
-                      CANCEL
-                    </button>
-                  </div>
-                )}
               </div>
             ))}
 
@@ -252,7 +221,7 @@ export default function ClientCatalog({
 
         {/* Cart preview strip */}
         {cart.length > 0 && (
-          <section className="border border-[#333] bg-[#0a0a0a] p-4 sm:p-6 flex justify-between items-center">
+          <section className="border absolute right-0 border-[#333] bg-[#0a0a0a] p-4 sm:p-6 flex justify-between items-center">
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aaa]">
                 {cart.length} ITEM{cart.length !== 1 ? "S" : ""} IN REQUEST
@@ -278,7 +247,16 @@ export default function ClientCatalog({
           href="/upload"
           className="flex-1 py-4 flex flex-col items-center justify-center gap-2 text-[#666] hover:text-white transition-colors bg-[#000]"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="17 8 12 3 7 8"></polyline>
             <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -291,7 +269,16 @@ export default function ClientCatalog({
           href="/catalog"
           className="flex-1 py-4 flex flex-col items-center justify-center gap-2 bg-white text-black border-t-2 border-white"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <rect x="3" y="3" width="7" height="7"></rect>
             <rect x="14" y="3" width="7" height="7"></rect>
             <rect x="14" y="14" width="7" height="7"></rect>
@@ -323,7 +310,16 @@ export default function ClientCatalog({
                   onClick={() => setShowReceipt(false)}
                   className="text-[#666] hover:text-white transition-colors bg-transparent border-none cursor-pointer p-1"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
@@ -331,7 +327,7 @@ export default function ClientCatalog({
               </div>
               <div className="flex gap-6 mt-3 text-[9px] tracking-widest text-[#555] uppercase font-bold">
                 <span>GUEST: {guestName.toUpperCase()}</span>
-                <span>
+                <span suppressHydrationWarning>
                   DATE: {new Date().toISOString().split("T")[0]}
                 </span>
               </div>
@@ -381,13 +377,12 @@ export default function ClientCatalog({
                   >
                     <div className="flex flex-col gap-1.5 flex-1">
                       <span className="text-[11px] font-bold tracking-[0.12em] text-white uppercase">
-                        {item.product.name
-                          .toUpperCase()
-                          .replace(/\s/g, "_")}
+                        {item.product.name.toUpperCase().replace(/\s/g, "_")}
                       </span>
                       {item.fileName && (
                         <span className="text-[8px] tracking-widest text-[#666] uppercase font-bold">
-                          FILE: {item.fileName.toUpperCase().replace(/\s/g, "_")}
+                          FILE:{" "}
+                          {item.fileName.toUpperCase().replace(/\s/g, "_")}
                         </span>
                       )}
                       <span className="text-[9px] tracking-widest text-[#555] uppercase font-bold">
@@ -403,7 +398,16 @@ export default function ClientCatalog({
                         onClick={() => removeFromCart(i)}
                         className="text-[#555] hover:text-[#f33] transition-colors bg-transparent border-none cursor-pointer p-0.5 opacity-0 group-hover:opacity-100"
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <line x1="18" y1="6" x2="6" y2="18"></line>
                           <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>

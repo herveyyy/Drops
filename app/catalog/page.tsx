@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
-import { getGuestSession, getAvailableProducts, getGuestFiles } from "@/app/actions";
+import { getGuestSession } from "@/app/actions/guest.actions";
+import { getGuestFiles } from "@/app/actions/file.actions";
+import { getAvailableProducts } from "@/app/actions/product.actions";
 import ClientCatalog from "./ClientCatalog";
 
 export default async function CatalogDashboard() {

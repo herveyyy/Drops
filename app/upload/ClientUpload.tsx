@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { refreshUploadPage } from "@/app/actions";
+import { refreshUploadPage } from "@/app/actions/file.actions";
 import type { SelectFile } from "@/lib/types/file.types";
 
 interface ClientUploadProps {
@@ -154,10 +154,9 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleFileSelect}
-            className="bg-white text-black w-full py-4 font-bold text-[11px] sm:text-xs tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#d0d0d0] transition-colors uppercase border-none cursor-pointer"
+          <label
+            htmlFor="upload-input"
+            className="bg-white text-black w-full py-4 font-bold text-[11px] sm:text-xs tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#d0d0d0] transition-colors uppercase cursor-pointer"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -165,7 +164,7 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
               <line x1="12" y1="3" x2="12" y2="15"></line>
             </svg>
             BEGIN_UPLOAD
-          </button>
+          </label>
 
           <div className="absolute top-4 right-4 hidden sm:flex items-center gap-2 border border-[#222] px-3 py-1.5 bg-[#000]">
             <span className="w-1.5 h-1.5 bg-[#fff] rounded-full animate-pulse"></span>
@@ -199,27 +198,28 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
 
           {/* Hidden file input */}
           <input
+            id="upload-input"
             ref={fileInputRef}
             type="file"
-            className="hidden"
+            className="opacity-0 absolute -z-10 w-[1px] h-[1px]"
             accept=".pdf,.jpg,.jpeg,.png,.webp,.ai"
             multiple
             onChange={handleInputChange}
           />
 
           {/* Dropzone */}
-          <div
+          <label
+            htmlFor="upload-input"
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            onClick={handleFileSelect}
-            className={`border border-dashed transition-all duration-200 p-12 sm:p-20 flex flex-col items-center justify-center gap-4 cursor-pointer mt-2 ${
+            className={`border border-dashed transition-all duration-200 p-12 sm:p-20 flex flex-col items-center justify-center gap-4 cursor-pointer mt-2 w-full block ${
               isDragging
                 ? "border-white bg-[#151515] scale-[1.01]"
                 : "border-[#333] bg-[#0a0a0a] hover:bg-[#111]"
             }`}
           >
-            <div className={`border p-3 transition-colors ${isDragging ? "border-white text-white" : "border-[#444] text-[#a0a0a0]"}`}>
+            <div className={`border p-3 transition-colors mx-auto w-fit ${isDragging ? "border-white text-white" : "border-[#444] text-[#a0a0a0]"}`}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14"></path>
                 <path d="M5 12h14"></path>
@@ -233,7 +233,7 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
                 SUPPORTED: PDF JPG PNG AI // MAX: 50MB
               </span>
             </div>
-          </div>
+          </label>
 
           {/* Uploading indicators */}
           {uploading.length > 0 && (

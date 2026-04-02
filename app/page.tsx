@@ -1,4 +1,4 @@
-import { initializeGuest } from "@/app/actions";
+import { initializeGuest } from "@/app/actions/guest.actions";
 
 export default function TerminalInit() {
   return (
