@@ -150,16 +150,6 @@ export default function ClientUpload({
               {guestName.toUpperCase()}
             </span>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setShowDoneModal(true);
-              setDoneStep(1);
-            }}
-            className="border border-white bg-white text-black px-4 sm:px-6 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-transparent hover:text-white transition-colors cursor-pointer"
-          >
-            END_SESSION
-          </button>
         </div>
       </header>
 
@@ -363,6 +353,16 @@ export default function ClientUpload({
               </div>
             )}
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              setShowDoneModal(true);
+              setDoneStep(1);
+            }}
+            className="border border-white bg-white text-black px-4 sm:px-6 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-transparent hover:text-white transition-colors cursor-pointer"
+          >
+            COMPLETE_PURCHASE
+          </button>
         </section>
       </main>
 

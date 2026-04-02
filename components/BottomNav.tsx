@@ -35,7 +35,12 @@ export default function BottomNav({
           pointer-events-auto
           transition-all duration-500 ease-[cubic-bezier(0.33,1,0.68,1)]
           transform border-t border-[#333] bg-[#0a0a0a] 
-          ${hasItems ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}
+          /* FIX: We add visibility-hidden when not in use to prevent click-blocking */
+          ${
+            hasItems
+              ? "translate-y-0 opacity-100 visible"
+              : "translate-y-full opacity-0 invisible h-0"
+          } 
         `}
       >
         <section className="p-4 sm:p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
@@ -58,7 +63,7 @@ export default function BottomNav({
       </div>
 
       {/* 2. Primary Navigation */}
-      <nav className="pointer-events-auto border-t border-[#222] bg-[#050505] flex">
+      <nav className="relative z-10 pointer-events-auto border-t border-[#222] bg-[#050505] flex">
         <Link
           href="/upload"
           className={`flex-1 py-5 flex flex-col items-center justify-center gap-2 transition-colors ${

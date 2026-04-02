@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import type { SelectProduct } from "@/lib/types/product.types";
 import type { SelectFile } from "@/lib/types/file.types";
@@ -38,7 +38,17 @@ export default function ClientCatalog({
     (sum, item) => sum + item.product.price * item.quantity,
     0,
   );
+  useEffect(() => {
+    if (showReceipt) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
 
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [showReceipt]);
   const addToCart = useCallback(
     (
       product: SelectProduct,
@@ -227,162 +237,163 @@ export default function ClientCatalog({
       />
       {/* ─── Receipt Preview Modal ─────────────────────────────────── */}
       {showReceipt && (
-        <div className="fixed inset-0 z-100lex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
-          <div className="border border-[#333] bg-[#0a0a0a] max-w-lg w-full max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl">
-            {/* Receipt Header */}
-            <div className="border-b border-[#222] p-6 sm:p-8 flex flex-col gap-2">
-              <div className="flex justify-between items-start">
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-lg sm:text-xl font-bold tracking-widest text-white uppercase">
-                    DROPS_STUDIO
-                  </h3>
-                  <p className="text-[8px] tracking-widest text-[#666] uppercase font-bold">
-                    UNOFFICIAL RECEIPT PREVIEW
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowReceipt(false)}
-                  className="text-[#666] hover:text-white transition-colors bg-transparent border-none cursor-pointer p-1"
+        <div className="absolute inset-0 z-100 bg-[#af8c8c] flex flex-col animate-in slide-in-from-bottom duration-500 ease-out">
+          {/* Full Screen Header */}
+          <div className="sticky top-0 z-10 bg-[#050505]/80 backdrop-blur-md border-b border-[#222] p-6 sm:p-8 flex flex-col gap-4">
+            <div className="flex justify-between items-start max-w-4xl mx-auto w-full">
+              <div className="flex flex-col gap-1">
+                <h3 className="text-xl sm:text-2xl font-black tracking-[0.3em] text-white uppercase">
+                  DROPS_STUDIO
+                </h3>
+                <p className="text-[9px] tracking-[0.3em] text-[#666] uppercase font-bold">
+                  UNOFFICIAL_RECEIPT_PREVIEW
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowReceipt(false)}
+                className="text-[#666] hover:text-white transition-colors bg-transparent border border-[#333] hover:border-white p-3 rounded-none cursor-pointer"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </div>
-              <div className="flex gap-6 mt-3 text-[9px] tracking-widest text-[#555] uppercase font-bold">
-                <span>GUEST: {guestName.toUpperCase()}</span>
-                <span suppressHydrationWarning>
-                  DATE: {new Date().toISOString().split("T")[0]}
-                </span>
-              </div>
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
             </div>
 
-            {/* Files Section */}
-            <div className="border-b border-[#222] p-6 sm:p-8 flex flex-col gap-3">
-              <h4 className="text-[10px] font-bold tracking-[0.25em] text-[#888] uppercase border-b border-[#1a1a1a] pb-2">
-                FILES_UPLOADED ({guestFiles.length})
-              </h4>
-              {guestFiles.length > 0 ? (
-                <div className="flex flex-col gap-2">
-                  {guestFiles.map((file, i) => (
+            <div className="flex gap-8 max-w-4xl mx-auto w-full text-[10px] tracking-[0.2em] text-[#555] uppercase font-bold">
+              <span>GUEST: {guestName.toUpperCase()}</span>
+              <span suppressHydrationWarning>
+                DATE:{" "}
+                {new Date().toISOString().split("T")[0].replace(/-/g, "/")}
+              </span>
+            </div>
+          </div>
+
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto pb-40">
+            <div className="max-w-4xl mx-auto w-full">
+              {/* Files Section */}
+              <div className="border-b border-[#181818] p-6 sm:p-10 flex flex-col gap-6">
+                <h4 className="text-[11px] font-bold tracking-[0.4em] text-[#444] uppercase">
+                  01 // FILES_UPLOADED ({guestFiles.length})
+                </h4>
+                {guestFiles.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {guestFiles.map((file, i) => (
+                      <div
+                        key={file.id}
+                        className="flex items-center gap-4 bg-[#0a0a0a] border border-[#181818] p-4 text-[10px]"
+                      >
+                        <span className="text-[#333] font-mono">
+                          [{String(i + 1).padStart(2, "0")}]
+                        </span>
+                        <span className="text-[#ccc] font-bold tracking-widest uppercase flex-1 truncate">
+                          {file.filename.toUpperCase().replace(/\s/g, "_")}
+                        </span>
+                        <span className="text-[#555] font-bold tracking-widest">
+                          {(file.sizeBytes / 1024).toFixed(0)}KB
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-[9px] tracking-widest text-[#444] uppercase font-bold italic">
+                    NO_FILES_DETECTED
+                  </span>
+                )}
+              </div>
+
+              {/* Items Section */}
+              <div className="border-b border-[#181818] p-6 sm:p-10 flex flex-col gap-6">
+                <h4 className="text-[11px] font-bold tracking-[0.4em] text-[#444] uppercase">
+                  02 // REQUESTED_ITEMS ({cart.length})
+                </h4>
+                <div className="flex flex-col gap-4">
+                  {cart.map((item, i) => (
                     <div
-                      key={file.id}
-                      className="flex items-center gap-3 text-[10px]"
+                      key={i}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-[#181818] p-5 group hover:border-[#444] transition-colors"
                     >
-                      <span className="text-[#555] font-bold w-5 text-right">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <span className="text-[#ccc] font-bold tracking-widest uppercase flex-1">
-                        {file.filename.toUpperCase().replace(/\s/g, "_")}
-                      </span>
-                      <span className="text-[#555] font-bold tracking-widest">
-                        {(file.sizeBytes / 1024).toFixed(0)}KB
-                      </span>
+                      <div className="flex flex-col gap-2">
+                        <span className="text-sm font-bold tracking-[0.15em] text-white uppercase">
+                          {item.product.name.toUpperCase().replace(/\s/g, "_")}
+                        </span>
+                        {item.fileName && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-1 h-1 bg-[#444]" />
+                            <span className="text-[9px] tracking-widest text-[#666] uppercase font-bold">
+                              LINKED_FILE:{" "}
+                              {item.fileName.toUpperCase().replace(/\s/g, "_")}
+                            </span>
+                          </div>
+                        )}
+                        <span className="text-[10px] tracking-widest text-[#555] uppercase font-bold">
+                          QUANTITY: {item.quantity} @{" "}
+                          {formatPrice(item.product.price)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between sm:justify-end gap-6">
+                        <span className="text-lg font-bold tracking-tighter text-white">
+                          {formatPrice(item.product.price * item.quantity)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(i)}
+                          className="text-[#333] hover:text-red-500 transition-colors bg-transparent border-none cursor-pointer p-2"
+                        >
+                          REMOVE
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <span className="text-[9px] tracking-widest text-[#444] uppercase font-bold">
-                  NO_FILES_UPLOADED
-                </span>
-              )}
-            </div>
+              </div>
 
-            {/* Items Section */}
-            <div className="border-b border-[#222] p-6 sm:p-8 flex flex-col gap-3">
-              <h4 className="text-[10px] font-bold tracking-[0.25em] text-[#888] uppercase border-b border-[#1a1a1a] pb-2">
-                REQUESTED_ITEMS ({cart.length})
-              </h4>
-              <div className="flex flex-col gap-3">
-                {cart.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start justify-between gap-4 border border-[#181818] p-3 group"
-                  >
-                    <div className="flex flex-col gap-1.5 flex-1">
-                      <span className="text-[11px] font-bold tracking-[0.12em] text-white uppercase">
-                        {item.product.name.toUpperCase().replace(/\s/g, "_")}
-                      </span>
-                      {item.fileName && (
-                        <span className="text-[8px] tracking-widest text-[#666] uppercase font-bold">
-                          FILE:{" "}
-                          {item.fileName.toUpperCase().replace(/\s/g, "_")}
-                        </span>
-                      )}
-                      <span className="text-[9px] tracking-widest text-[#555] uppercase font-bold">
-                        QTY: {item.quantity} × {formatPrice(item.product.price)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[11px] font-bold tracking-wider text-white">
-                        {formatPrice(item.product.price * item.quantity)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => removeFromCart(i)}
-                        className="text-[#555] hover:text-[#f33] transition-colors bg-transparent border-none cursor-pointer p-0.5 opacity-0 group-hover:opacity-100"
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <line x1="18" y1="6" x2="6" y2="18"></line>
-                          <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+              {/* Grand Total Area */}
+              <div className="p-6 sm:p-10 flex flex-col sm:flex-row justify-between items-baseline sm:items-center gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-bold tracking-[0.4em] text-[#444] uppercase">
+                    03 // FINAL_ESTIMATE
+                  </span>
+                  <p className="text-[8px] tracking-widest text-[#333] uppercase font-bold mt-1">
+                    *Taxes and shipping calculated at fulfillment
+                  </p>
+                </div>
+                <span className="text-5xl sm:text-7xl font-black tracking-tighter text-white">
+                  {formatPrice(totalAmount)}
+                </span>
               </div>
             </div>
+          </div>
 
-            {/* Total */}
-            <div className="border-b border-[#222] p-6 sm:p-8 flex justify-between items-center">
-              <span className="text-[10px] font-bold tracking-[0.25em] text-[#888] uppercase">
-                TOTAL_AMOUNT
-              </span>
-              <span className="text-2xl sm:text-3xl font-black tracking-wider text-white">
-                {formatPrice(totalAmount)}
-              </span>
-            </div>
-
-            {/* Actions */}
-            <div className="p-6 sm:p-8 flex flex-col gap-3">
+          {/* Bottom Fixed Action Bar */}
+          <div className="fixed bottom-0 w-full bg-[#050505] border-t border-[#222] p-6">
+            <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setShowReceipt(false)}
+                className="order-2 sm:order-1 w-full border border-[#333] text-[#666] py-5 text-[11px] font-bold tracking-[0.3em] uppercase hover:border-white hover:text-white transition-all cursor-pointer bg-transparent"
+              >
+                BACK_TO_STUDIO
+              </button>
               <button
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="w-full bg-white text-black py-4 text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-[#ccc] transition-colors cursor-pointer border-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="order-1 sm:order-2 w-full bg-white text-black py-5 text-[11px] font-bold tracking-[0.3em] uppercase hover:bg-zinc-200 transition-all cursor-pointer border-none disabled:opacity-30 active:scale-[0.98]"
               >
-                {submitting ? "PROCESSING..." : "SUBMIT_FINAL_ORDER"}
+                {submitting ? "UPLOADING_REQUEST..." : "SUBMIT_FINAL_ORDER"}
               </button>
-              <button
-                type="button"
-                onClick={() => setShowReceipt(false)}
-                className="w-full border border-[#444] text-[#aaa] py-3 text-[10px] font-bold tracking-[0.2em] uppercase hover:border-white hover:text-white transition-colors cursor-pointer bg-transparent"
-              >
-                CONTINUE_SHOPPING
-              </button>
-              <p className="text-[8px] tracking-widest text-[#444] uppercase font-bold text-center mt-2">
-                THIS IS NOT AN OFFICIAL RECEIPT. FINAL PRICING MAY VARY.
-              </p>
             </div>
           </div>
         </div>
