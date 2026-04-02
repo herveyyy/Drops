@@ -50,6 +50,16 @@ export default function AdminNavbar() {
             >
               Sales
             </Link>
+            <Link
+              href="/admin/drive"
+              className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                isActive("/admin/drive")
+                  ? "text-white border-b-2 border-white pb-1"
+                  : "text-[#666] hover:text-white"
+              }`}
+            >
+              Drive
+            </Link>
           </div>
         </div>
 

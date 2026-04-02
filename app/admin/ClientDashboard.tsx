@@ -6,6 +6,7 @@ import { getFilesByGuestId } from "@/app/actions/file.actions";
 import { QueueItem } from "@/lib/types/request.types";
 import { completePayment } from "@/app/actions/request.actions";
 import AdminNavbar from "./AdminNavbar";
+import OperatorModal from "@/components/OperatorModal";
 
 interface ClientFile {
   id: number;
@@ -49,6 +50,7 @@ export default function ClientDashboard({
   const [loading, setLoading] = useState(false);
   const [cart, setCart] = useState<CartQueueItem[]>([]);
   const [liveQueueState, setLiveQueueState] = useState<QueueItem[]>(queueItems);
+  const [showOperatorModal, setShowOperatorModal] = useState(false);
 
   useEffect(() => {
     if (selectedGuest) {
@@ -100,15 +102,14 @@ export default function ClientDashboard({
     );
   };
 
-  const handleConfirmPayment = async () => {
-    const operatorName = window.prompt("Enter operator name for transparency:");
-    if (!operatorName || operatorName.trim() === "") {
-      alert("Operator name is required.");
-      return;
-    }
+  const handleConfirmPayment = () => {
+    setShowOperatorModal(true);
+  };
+
+  const handleOperatorConfirm = async (operatorName: string) => {
     try {
       const requestIds = cart.map((item) => item.id);
-      await completePayment(requestIds, operatorName.trim());
+      await completePayment(requestIds, operatorName);
       // Clear cart and update queue
       setCart([]);
       setLiveQueueState((prev) =>
@@ -130,6 +131,11 @@ export default function ClientDashboard({
   return (
     <>
       <AdminNavbar />
+      <OperatorModal
+        isOpen={showOperatorModal}
+        onClose={() => setShowOperatorModal(false)}
+        onConfirm={handleOperatorConfirm}
+      />
       <div className="h-screen bg-[#020202] text-white font-mono pt-16">
         <div className="flex h-[calc(100vh-64px)] overflow-hidden">
           {/* LEFT PANE */}
