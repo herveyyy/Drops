@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { SelectProduct } from "@/lib/types/product.types";
 import type { SelectFile } from "@/lib/types/file.types";
 import { submitOrderRequest } from "@/app/actions/request.actions";
+import BottomNav from "@/components/BottomNav";
 
 interface ClientCatalogProps {
   guestName: string;
@@ -136,7 +137,7 @@ export default function ClientCatalog({
           </p>
         </div>
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="hidden sm:flex items-center gap-2 border border-[#222] px-3 py-1.5 bg-[#000]">
+          <div className="hidden sm:flex items-center gap-2 border border-[#222] px-3 py-1.5 bg-black">
             <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
             <span className="text-[9px] tracking-widest uppercase font-bold text-[#aaa]">
               {guestName.toUpperCase()}
@@ -179,7 +180,7 @@ export default function ClientCatalog({
                   <span className="text-[#333] text-[10px] tracking-widest font-bold uppercase z-10">
                     IMAGE_FEED_UNAVAILABLE
                   </span>
-                  <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px)] bg-size-[100%_4px] pointer-events-none"></div>
                 </div>
 
                 {/* Product info */}
@@ -221,7 +222,7 @@ export default function ClientCatalog({
 
         {/* Cart preview strip */}
         {cart.length > 0 && (
-          <section className="border absolute right-0 border-[#333] bg-[#0a0a0a] p-4 sm:p-6 flex justify-between items-center">
+          <section className="border absolute  z-50 border-[#333] bg-[#0a0a0a] p-4 sm:p-6 flex justify-between items-center">
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aaa]">
                 {cart.length} ITEM{cart.length !== 1 ? "S" : ""} IN REQUEST
@@ -240,65 +241,16 @@ export default function ClientCatalog({
           </section>
         )}
       </main>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 w-full border-t border-[#222] bg-[#050505] flex z-50">
-        <Link
-          href="/upload"
-          className="flex-1 py-4 flex flex-col items-center justify-center gap-2 text-[#666] hover:text-white transition-colors bg-[#000]"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-          <span className="text-[8px] sm:text-[9px] font-bold tracking-[0.2em] uppercase">
-            UPLOAD
-          </span>
-        </Link>
-        <Link
-          href="/catalog"
-          className="flex-1 py-4 flex flex-col items-center justify-center gap-2 bg-white text-black border-t-2 border-white"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-          </svg>
-          <span className="text-[8px] sm:text-[9px] font-bold tracking-[0.2em] uppercase">
-            CATALOG
-          </span>
-        </Link>
-      </nav>
-
+      <BottomNav />
       {/* ─── Receipt Preview Modal ─────────────────────────────────── */}
       {showReceipt && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-100lex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
           <div className="border border-[#333] bg-[#0a0a0a] max-w-lg w-full max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl">
             {/* Receipt Header */}
             <div className="border-b border-[#222] p-6 sm:p-8 flex flex-col gap-2">
               <div className="flex justify-between items-start">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-lg sm:text-xl font-bold tracking-[0.1em] text-white uppercase">
+                  <h3 className="text-lg sm:text-xl font-bold tracking-widest text-white uppercase">
                     DROPS_STUDIO
                   </h3>
                   <p className="text-[8px] tracking-widest text-[#666] uppercase font-bold">
@@ -348,7 +300,7 @@ export default function ClientCatalog({
                       <span className="text-[#555] font-bold w-5 text-right">
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                      <span className="text-[#ccc] font-bold tracking-[0.1em] uppercase flex-1">
+                      <span className="text-[#ccc] font-bold tracking-widest uppercase flex-1">
                         {file.filename.toUpperCase().replace(/\s/g, "_")}
                       </span>
                       <span className="text-[#555] font-bold tracking-widest">

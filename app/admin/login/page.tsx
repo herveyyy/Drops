@@ -24,7 +24,7 @@ export default function SignInPage() {
           {/* Email Input */}
           <div className="flex flex-col gap-2">
             <label
-              className="text-[10px] text-[#888] font-bold tracking-[0.1em] uppercase"
+              className="text-[10px] text-[#888] font-bold tracking-widest uppercase"
               htmlFor="email"
             >
               [ PARAM_01 ] EMAIL_IDENTIFIER
@@ -42,7 +42,7 @@ export default function SignInPage() {
           {/* Password Input */}
           <div className="flex flex-col gap-2">
             <label
-              className="text-[10px] text-[#888] font-bold tracking-[0.1em] uppercase"
+              className="text-[10px] text-[#888] font-bold tracking-widest uppercase"
               htmlFor="password"
             >
               [ PARAM_02 ] ACCESS_KEY

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import Link from "next/link";
 import { refreshUploadPage } from "@/app/actions/file.actions";
 import type { SelectFile } from "@/lib/types/file.types";
+import BottomNav from "@/components/BottomNav";
 
 interface ClientUploadProps {
   guestName: string;
@@ -19,7 +19,16 @@ function formatFileSize(bytes: number): string {
 function getFileIcon(mimeType: string) {
   if (mimeType.startsWith("image/")) {
     return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
         <circle cx="8.5" cy="8.5" r="1.5"></circle>
         <polyline points="21 15 16 10 5 21"></polyline>
@@ -27,14 +36,26 @@ function getFileIcon(mimeType: string) {
     );
   }
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
       <polyline points="13 2 13 9 20 9"></polyline>
     </svg>
   );
 }
 
-export default function ClientUpload({ guestName, initialFiles }: ClientUploadProps) {
+export default function ClientUpload({
+  guestName,
+  initialFiles,
+}: ClientUploadProps) {
   const [files, setFiles] = useState<SelectFile[]>(initialFiles);
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState<string[]>([]); // filenames currently uploading
@@ -112,7 +133,6 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-mono flex flex-col pt-4 pb-24">
-
       {/* Header */}
       <header className="flex justify-between items-center px-4 sm:px-8 py-4 border-b border-[#222]">
         <div className="flex flex-col gap-1.5">
@@ -124,16 +144,19 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
           </p>
         </div>
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="hidden sm:flex items-center gap-2 border border-[#222] px-3 py-1.5 bg-[#000]">
-            <span className="w-1.5 h-1.5 bg-[#fff] rounded-full animate-pulse"></span>
+          <div className="hidden sm:flex items-center gap-2 border border-[#222] px-3 py-1.5 bg-black">
+            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
             <span className="text-[9px] tracking-widest uppercase font-bold text-[#aaa]">
               {guestName.toUpperCase()}
             </span>
           </div>
-          <button 
+          <button
             type="button"
-            onClick={() => { setShowDoneModal(true); setDoneStep(1); }}
-            className="border border-[#fff] bg-white text-black px-4 sm:px-6 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-transparent hover:text-white transition-colors cursor-pointer"
+            onClick={() => {
+              setShowDoneModal(true);
+              setDoneStep(1);
+            }}
+            className="border border-white bg-white text-black px-4 sm:px-6 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-transparent hover:text-white transition-colors cursor-pointer"
           >
             END_SESSION
           </button>
@@ -142,7 +165,6 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
 
       {/* Main Container */}
       <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 pt-8 flex flex-col gap-10">
-
         {/* System Readiness Block */}
         <section className="border border-[#222] bg-[#0a0a0a] p-6 sm:p-8 flex flex-col gap-6 relative">
           <div className="flex flex-col gap-2.5">
@@ -158,7 +180,16 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
             htmlFor="upload-input"
             className="bg-white text-black w-full py-4 font-bold text-[11px] sm:text-xs tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#d0d0d0] transition-colors uppercase cursor-pointer"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="17 8 12 3 7 8"></polyline>
               <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -166,15 +197,24 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
             BEGIN_UPLOAD
           </label>
 
-          <div className="absolute top-4 right-4 hidden sm:flex items-center gap-2 border border-[#222] px-3 py-1.5 bg-[#000]">
-            <span className="w-1.5 h-1.5 bg-[#fff] rounded-full animate-pulse"></span>
+          <div className="absolute top-4 right-4 hidden sm:flex items-center gap-2 border border-[#222] px-3 py-1.5 bg-black">
+            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
             <span className="text-[9px] tracking-widest uppercase font-bold text-[#aaa]">
               BUFFER: {files.length}_FILE{files.length !== 1 ? "S" : ""}_STORED
             </span>
           </div>
 
           <div className="mt-2 border-t border-[#222] pt-4 flex gap-4 text-[10px] tracking-widest uppercase font-bold text-[#888] items-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
@@ -192,7 +232,11 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
               FILE_TRANSFER
             </h3>
             <span className="text-[9px] tracking-widest text-[#666] uppercase font-bold">
-              {uploading.length > 0 ? "UPLOADING..." : files.length > 0 ? `${files.length}_IN_QUEUE` : "QUEUE_EMPTY"}
+              {uploading.length > 0
+                ? "UPLOADING..."
+                : files.length > 0
+                  ? `${files.length}_IN_QUEUE`
+                  : "QUEUE_EMPTY"}
             </span>
           </div>
 
@@ -201,7 +245,7 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
             id="upload-input"
             ref={fileInputRef}
             type="file"
-            className="opacity-0 absolute -z-10 w-[1px] h-[1px]"
+            className="opacity-0 absolute -z-10 w-px h-px"
             accept=".pdf,.jpg,.jpeg,.png,.webp,.ai"
             multiple
             onChange={handleInputChange}
@@ -213,14 +257,25 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            className={`border border-dashed transition-all duration-200 p-12 sm:p-20 flex flex-col items-center justify-center gap-4 cursor-pointer mt-2 w-full block ${
+            className={`border border-dashed transition-all duration-200 p-12 sm:p-20 flex flex-col items-center justify-center gap-4 cursor-pointer mt-2 w-full ${
               isDragging
                 ? "border-white bg-[#151515] scale-[1.01]"
                 : "border-[#333] bg-[#0a0a0a] hover:bg-[#111]"
             }`}
           >
-            <div className={`border p-3 transition-colors mx-auto w-fit ${isDragging ? "border-white text-white" : "border-[#444] text-[#a0a0a0]"}`}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <div
+              className={`border p-3 transition-colors mx-auto w-fit ${isDragging ? "border-white text-white" : "border-[#444] text-[#a0a0a0]"}`}
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M12 5v14"></path>
                 <path d="M5 12h14"></path>
               </svg>
@@ -239,9 +294,22 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
           {uploading.length > 0 && (
             <div className="flex flex-col gap-2">
               {uploading.map((name) => (
-                <div key={name} className="border border-[#333] bg-[#0a0a0a] p-4 flex items-center gap-4 animate-pulse">
+                <div
+                  key={name}
+                  className="border border-[#333] bg-[#0a0a0a] p-4 flex items-center gap-4 animate-pulse"
+                >
                   <div className="border border-[#444] w-10 h-10 flex items-center justify-center text-[#888] bg-[#111]">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="animate-spin"
+                    >
                       <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
                     </svg>
                   </div>
@@ -274,12 +342,15 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
                       {file.filename.toUpperCase().replace(/\s/g, "_")}
                     </p>
                     <p className="text-[8px] sm:text-[9px] tracking-widest text-[#666] uppercase m-0 font-bold">
-                      {formatFileSize(file.sizeBytes)} // {file.status.toUpperCase()}
+                      {formatFileSize(file.sizeBytes)} //{" "}
+                      {file.status.toUpperCase()}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`w-1.5 h-1.5 rounded-full ${file.status === "pending" ? "bg-[#ff0]" : "bg-[#0f0]"}`}></span>
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${file.status === "pending" ? "bg-[#ff0]" : "bg-[#0f0]"}`}
+                  ></span>
                 </div>
               </div>
             ))}
@@ -293,46 +364,28 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
             )}
           </div>
         </section>
-
       </main>
 
-      {/* Bottom Navigation Grid */}
-      <nav className="fixed bottom-0 w-full border-t border-[#222] bg-[#050505] flex z-50">
-        <Link href="/upload" className="flex-1 py-4 flex flex-col items-center justify-center gap-2 bg-white text-black border-t-2 border-white">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-          <span className="text-[8px] sm:text-[9px] font-bold tracking-[0.2em] uppercase">UPLOAD</span>
-        </Link>
-
-        <Link href="/catalog" className="flex-1 py-4 flex flex-col items-center justify-center gap-2 text-[#666] hover:text-white transition-colors bg-[#000]">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-          </svg>
-          <span className="text-[8px] sm:text-[9px] font-bold tracking-[0.2em] uppercase">CATALOG</span>
-        </Link>
-      </nav>
+      <BottomNav />
 
       {/* Done Modal */}
       {showDoneModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="border border-[#333] bg-[#0a0a0a] max-w-md w-full p-8 flex flex-col gap-6 shadow-2xl">
             {doneStep === 1 ? (
               <>
                 <div className="flex flex-col gap-2">
-                  <h3 className="text-lg sm:text-xl font-bold tracking-[0.1em] text-white uppercase">SESSION_COMPLETE?</h3>
+                  <h3 className="text-lg sm:text-xl font-bold tracking-widest text-white uppercase">
+                    SESSION_COMPLETE?
+                  </h3>
                   <p className="text-[#888] text-[10px] sm:text-xs tracking-widest uppercase leading-relaxed">
-                    DO YOU WANT TO BROWSE THE PRODUCT CATALOG TO BUY SOMETHING, OR END YOUR SESSION?
+                    DO YOU WANT TO BROWSE THE PRODUCT CATALOG TO BUY SOMETHING,
+                    OR END YOUR SESSION?
                   </p>
                 </div>
                 <div className="flex flex-col gap-3 mt-2 sm:mt-4">
                   <button
-                    type="button" 
+                    type="button"
                     onClick={() => {
                       setShowDoneModal(false);
                       window.location.href = "/catalog";
@@ -341,14 +394,14 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
                   >
                     YES, BUY SOMETHING
                   </button>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setDoneStep(2)}
                     className="w-full border border-[#444] text-[#aaa] py-3 sm:py-4 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase hover:border-white hover:text-white transition-colors cursor-pointer"
                   >
                     NO, I'M DONE
                   </button>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setShowDoneModal(false)}
                     className="w-full text-[#666] py-2 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase hover:text-white transition-colors mt-2 cursor-pointer"
@@ -360,22 +413,25 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
             ) : (
               <>
                 <div className="flex flex-col gap-2">
-                  <h3 className="text-lg sm:text-xl font-bold tracking-[0.1em] text-[#ff3333] uppercase">ARE_YOU_SURE?</h3>
+                  <h3 className="text-lg sm:text-xl font-bold tracking-widest text-[#ff3333] uppercase">
+                    ARE_YOU_SURE?
+                  </h3>
                   <p className="text-[#888] text-[10px] sm:text-xs tracking-widest uppercase leading-relaxed">
-                    YOUR UPLOADED FILES HAVE BEEN SECURELY SAVED. ONCE YOU END YOUR SESSION, YOU WILL NEED TO RE-REGISTER TO UPLOAD AGAIN.
+                    YOUR UPLOADED FILES HAVE BEEN SECURELY SAVED. ONCE YOU END
+                    YOUR SESSION, YOU WILL NEED TO RE-REGISTER TO UPLOAD AGAIN.
                   </p>
                 </div>
                 <div className="flex flex-col gap-3 mt-2 sm:mt-4">
                   <button
-                    type="button" 
+                    type="button"
                     onClick={() => {
-                        window.location.href = "/";
+                      window.location.href = "/";
                     }}
                     className="w-full bg-[#ff3333] text-white text-center py-3 sm:py-4 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-[#cc0000] transition-colors cursor-pointer"
                   >
                     YES, END SESSION
                   </button>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setShowDoneModal(false)}
                     className="w-full border border-[#444] text-[#aaa] py-3 sm:py-4 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase hover:border-white hover:text-white transition-colors cursor-pointer"
@@ -388,7 +444,6 @@ export default function ClientUpload({ guestName, initialFiles }: ClientUploadPr
           </div>
         </div>
       )}
-
     </div>
   );
 }
