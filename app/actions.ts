@@ -18,6 +18,16 @@ import { CreateFileUsecase } from "@/db/usecase/file/create_file.usecase";
 import { GetFilesByGuestIdUsecase } from "@/db/usecase/file/get_files_by_guest_id.usecase";
 import { FileService } from "@/db/service/file.service";
 
+import { ProductsController } from "@/db/controller/products/products.controller";
+import { GetAvailableProductsUsecase } from "@/db/usecase/product/get_available_products.usecase";
+import { ProductService } from "@/db/service/product.service";
+
+import { RequestsController } from "@/db/controller/requests/requests.controller";
+import { CreateRequestUsecase } from "@/db/usecase/request/create_request.usecase";
+import { RequestService } from "@/db/service/request.service";
+
+import { InsertRequestItem } from "@/lib/types/request.types";
+
 // ─── Controller Factories ───────────────────────────────────────────
 
 export async function createUserController(): Promise<UsersController> {
@@ -33,6 +43,18 @@ export async function createGuestsController(): Promise<GuestsController> {
 export async function createFilesController(): Promise<FilesController> {
   return new FilesController(
     new FileService(new CreateFileUsecase(), new GetFilesByGuestIdUsecase()),
+  );
+}
+
+export async function createProductsController(): Promise<ProductsController> {
+  return new ProductsController(
+    new ProductService(new GetAvailableProductsUsecase()),
+  );
+}
+
+export async function createRequestsController(): Promise<RequestsController> {
+  return new RequestsController(
+    new RequestService(new CreateRequestUsecase()),
   );
 }
 
@@ -90,4 +112,35 @@ export async function getGuestFiles() {
 
 export async function refreshUploadPage() {
   revalidatePath("/upload");
+}
+
+// ─── Product Actions ────────────────────────────────────────────────
+
+export async function getAvailableProducts() {
+  const controller = await createProductsController();
+  return controller.getAvailableProducts();
+}
+
+// ─── Request Actions ────────────────────────────────────────────────
+
+export async function submitOrderRequest(
+  items: Omit<InsertRequestItem, "requestId">[],
+  totalAmount: number,
+) {
+  const cookieStore = await cookies();
+  const guestIdRaw = cookieStore.get("drops_guest_id")?.value;
+
+  if (!guestIdRaw) {
+    throw new Error("No guest session");
+  }
+
+  const guestId = parseInt(guestIdRaw, 10);
+  if (isNaN(guestId)) {
+    throw new Error("Invalid guest session");
+  }
+
+  const controller = await createRequestsController();
+  const request = await controller.createRequest(guestId, totalAmount, items);
+
+  return request;
 }
