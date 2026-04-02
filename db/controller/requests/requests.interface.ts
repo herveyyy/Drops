@@ -11,5 +11,8 @@ export interface IRequests {
     items: Omit<InsertRequestItem, "requestId">[],
   ): Promise<SelectRequest>;
   getLiveQueue(): Promise<QueueItem[]>;
+  updateRequestItemsPricing(
+    items: { requestItemId: number; unitPrice: number }[],
+  ): Promise<void>;
   completePayment(requestIds: number[], operatorName: string): Promise<void>;
 }

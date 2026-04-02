@@ -25,11 +25,29 @@ export async function submitOrderRequest(
 
   return request;
 }
+
+export async function createAdminRequest(
+  guestId: number,
+  items: Omit<InsertRequestItem, "requestId">[],
+  totalAmount: number,
+) {
+  const controller = await createRequestsController();
+  return controller.createRequest(guestId, totalAmount, items);
+}
+
 export async function fetchLiveQueue() {
   const controller = await createRequestsController();
   const liveQueue = await controller.getLiveQueue();
   return liveQueue;
 }
+
+export async function updateAdminBillLines(
+  items: { requestItemId: number; unitPrice: number }[],
+) {
+  const controller = await createRequestsController();
+  await controller.updateRequestItemsPricing(items);
+}
+
 export async function completePayment(
   requestIds: number[],
   operatorName: string,

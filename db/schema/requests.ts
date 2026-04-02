@@ -25,11 +25,12 @@ export const requestItems = sqliteTable("request_items", {
   requestId: integer("request_id")
     .notNull()
     .references(() => requests.id),
-  productId: integer("product_id")
-    .notNull()
-    .references(() => products.id),
+  productId: integer("product_id").references(() => products.id),
   fileId: integer("file_id").references(() => files.id), // Nullable because you might request a product with no file
   quantity: integer("quantity").notNull().default(1),
+  unitPrice: integer("unit_price"),
+  serviceLabel: text("service_label"),
+  serviceSpecs: text("service_specs"),
   createdAt: text("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),

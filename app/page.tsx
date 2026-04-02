@@ -18,7 +18,7 @@ export default function TerminalInit() {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-white sm:w-[18px] sm:h-[18px]"
+            className="text-white sm:w-4.5 sm:h-4.5"
           >
             <polyline points="4 17 10 11 4 5"></polyline>
             <line x1="12" y1="19" x2="20" y2="19"></line>
@@ -33,11 +33,11 @@ export default function TerminalInit() {
 
       {/* Main Centered Content */}
       <div className="flex-1 flex flex-col items-center justify-center -mt-10 sm:-mt-20 px-5 sm:px-8">
-        <div className="max-w-[760px] w-full flex flex-col gap-8 sm:gap-12">
+        <div className="max-w-190 w-full flex flex-col gap-8 sm:gap-12">
           {/* Header Block */}
           <div className="flex flex-col gap-4 sm:gap-5">
             <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-[11px] font-bold text-[#888] tracking-[0.3em] uppercase">
-              <div className="w-8 sm:w-12 h-[2px] bg-[#888]"></div>
+              <div className="w-8 sm:w-12 h-0.5 bg-[#888]"></div>
               WELCOME_PROTOCOL
             </div>
 
@@ -47,7 +47,7 @@ export default function TerminalInit() {
               DROPS
             </h1>
 
-            <p className="text-[#888] text-xs sm:text-base leading-relaxed tracking-wider mt-1 sm:mt-2 max-w-[540px]">
+            <p className="text-[#888] text-xs sm:text-base leading-relaxed tracking-wider mt-1 sm:mt-2 max-w-135">
               Please enter your name to connect to our local network. We will
               use this to remember your device and personalize your experience
               in the shop today.

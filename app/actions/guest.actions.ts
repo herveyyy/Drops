@@ -48,3 +48,8 @@ export async function getAllGuests() {
   const controller = await createGuestsController();
   return controller.getAllGuests();
 }
+
+export async function archiveGuest(guestId: number) {
+  const controller = await createGuestsController();
+  await controller.archiveGuest(guestId);
+}

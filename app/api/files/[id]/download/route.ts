@@ -7,10 +7,11 @@ import { eq } from "drizzle-orm";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const fileId = parseInt(params.id, 10);
+    const { id } = await params;
+    const fileId = parseInt(id, 10);
     const inline = request.nextUrl.searchParams.get("inline") === "1";
 
     if (isNaN(fileId)) {

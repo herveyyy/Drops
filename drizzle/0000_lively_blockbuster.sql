@@ -17,6 +17,7 @@ CREATE TABLE `files` (
 CREATE TABLE `guests` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
+	`status` text DEFAULT 'active' NOT NULL,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
@@ -44,9 +45,12 @@ CREATE TABLE `products` (
 CREATE TABLE `request_items` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`request_id` integer NOT NULL,
-	`product_id` integer NOT NULL,
+	`product_id` integer,
 	`file_id` integer,
 	`quantity` integer DEFAULT 1 NOT NULL,
+	`unit_price` integer,
+	`service_label` text,
+	`service_specs` text,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	FOREIGN KEY (`request_id`) REFERENCES `requests`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON UPDATE no action ON DELETE no action,

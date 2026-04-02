@@ -83,9 +83,14 @@ export async function POST(request: NextRequest) {
 
     await fs.mkdir(guestDir, { recursive: true });
 
-    const timestamp = Date.now();
-    const safeFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const storedFilename = `${timestamp}_${safeFilename}`;
+    const now = new Date();
+    const dateOnly = now.toISOString().split("T")[0]; // YYYY-MM-DD
+    const safeFileBase = path
+      .basename(file.name)
+      .replace(/[^a-zA-Z0-9._-]/g, "_")
+      .replace(/\.[^.]+$/, "");
+    const extension = path.extname(file.name) || "";
+    const storedFilename = `${safeFileBase}_${safeGuestName}_${dateOnly}${extension}`;
     const filePath = path.join(guestDir, storedFilename);
 
     const arrayBuffer = await file.arrayBuffer();

@@ -40,4 +40,13 @@ export class GuestsController implements IGuests {
       throw new Error("Failed to get all guests");
     }
   }
+
+  async archiveGuest(id: number): Promise<void> {
+    try {
+      return await this.guestService.archiveGuest(id);
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to archive guest");
+    }
+  }
 }

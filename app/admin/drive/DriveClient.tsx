@@ -112,7 +112,7 @@ export default function DriveClient({
                       FILE
                     </div>
                     <div>
-                      <h3 className="text-xl font-black uppercase tracking-tight break-words">
+                      <h3 className="text-xl font-black uppercase tracking-tight wrap-break-word">
                         {file.name}
                       </h3>
                       <div className="text-[9px] text-[#777] mt-1">

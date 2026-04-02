@@ -81,11 +81,18 @@ export default function ClientCatalog({
     setSubmitting(true);
 
     try {
-      const items = cart.map((item) => ({
-        productId: item.product.id,
-        fileId: item.fileId,
-        quantity: item.quantity,
-      }));
+      const items = cart.map((item) => {
+        const baseItem = {
+          productId: item.product.id,
+          quantity: item.quantity,
+        } as { productId: number; quantity: number; fileId?: number | null };
+
+        if (item.fileId) {
+          baseItem.fileId = item.fileId;
+        }
+
+        return baseItem;
+      });
 
       await submitOrderRequest(items, totalAmount);
       setSubmitted(true);

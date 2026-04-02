@@ -1,12 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { SelectGuest } from "@/lib/types/guest.types";
+import { useEffect, useMemo, useState } from "react";
+import { archiveGuest } from "@/app/actions/guest.actions";
 import { getFilesByGuestId } from "@/app/actions/file.actions";
-import { QueueItem } from "@/lib/types/request.types";
-import { completePayment } from "@/app/actions/request.actions";
-import AdminNavbar from "./AdminNavbar";
+import {
+  completePayment,
+  createAdminRequest,
+  updateAdminBillLines,
+} from "@/app/actions/request.actions";
 import OperatorModal from "@/components/OperatorModal";
+import { SelectGuest } from "@/lib/types/guest.types";
+import { QueueItem } from "@/lib/types/request.types";
+import AdminNavbar from "./AdminNavbar";
 
 interface ClientFile {
   id: number;
@@ -15,105 +20,234 @@ interface ClientFile {
   metadata: string | null;
 }
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-}
-
-interface CartItem {
-  productId: number;
-  productName: string;
-  quantity: number;
-  price: number;
-}
-
 interface CartQueueItem extends QueueItem {
   editablePrice: number;
 }
 
+interface DraftBillItem {
+  id: string;
+  fileId: number;
+  fileName: string;
+  totalPrice: number;
+  serviceLabel: string;
+  serviceSpecs: string;
+}
+
+interface OrderFeedGroup {
+  id: number;
+  guestName: string;
+  totalAmount: number;
+  files: Array<{
+    fileId: number;
+    fileName: string;
+    mimeType: string | null;
+    params: string | null;
+  }>;
+  billLines: Array<{
+    key: string;
+    title: string;
+    quantity: number;
+    lineAmount: number;
+    linkedFileName: string | null;
+    specs: string | null;
+    isManual: boolean;
+  }>;
+}
+
 interface ClientDashboardProps {
   guests: SelectGuest[];
-  products: Product[];
   queueItems: QueueItem[];
+}
+
+function formatPeso(cents: number) {
+  return `PHP ${(cents / 100).toFixed(2)}`;
+}
+
+function getQueueItemTitle(item: QueueItem) {
+  if (item.serviceLabel) return item.serviceLabel;
+  if (item.productName) return item.productName;
+  if (item.fileName) return item.fileName;
+  return "Unnamed Line";
 }
 
 export default function ClientDashboard({
   guests,
-  products,
   queueItems,
 }: ClientDashboardProps) {
+  const [guestList, setGuestList] = useState<SelectGuest[]>(guests);
   const [selectedGuest, setSelectedGuest] = useState<SelectGuest | null>(
-    guests.length > 0 ? guests[0] : null,
+    guests[0] ?? null,
   );
   const [guestFiles, setGuestFiles] = useState<ClientFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [cart, setCart] = useState<CartQueueItem[]>([]);
+  const [draftBillItems, setDraftBillItems] = useState<DraftBillItem[]>([]);
   const [liveQueueState, setLiveQueueState] = useState<QueueItem[]>(queueItems);
   const [showOperatorModal, setShowOperatorModal] = useState(false);
 
   useEffect(() => {
-    if (selectedGuest) {
-      const guestQueue = liveQueueState.filter(
-        (item) => item.guestName === selectedGuest.name,
-      );
-      setCart(
-        guestQueue.map((item) => ({
-          ...item,
-          editablePrice: item.totalAmount,
-        })),
-      );
-    } else {
+    setGuestList(guests);
+    setSelectedGuest((current) => {
+      if (current && guests.some((guest) => guest.id === current.id)) {
+        return current;
+      }
+      return guests[0] ?? null;
+    });
+  }, [guests]);
+
+  useEffect(() => {
+    const loadSelectedGuestFiles = async () => {
+      if (!selectedGuest) {
+        setGuestFiles([]);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const files = await getFilesByGuestId(selectedGuest.id);
+        setGuestFiles(Array.isArray(files) ? files : []);
+      } catch (error) {
+        console.error("Failed to fetch files:", error);
+        setGuestFiles([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadSelectedGuestFiles();
+  }, [selectedGuest]);
+
+  useEffect(() => {
+    if (!selectedGuest) {
       setCart([]);
+      setDraftBillItems([]);
+      return;
     }
+
+    const guestQueue = liveQueueState.filter(
+      (item) => item.guestName === selectedGuest.name,
+    );
+
+    setCart(
+      guestQueue.map((item) => ({
+        ...item,
+        editablePrice: item.lineAmount ?? item.totalAmount,
+      })),
+    );
+    setDraftBillItems([]);
   }, [selectedGuest, liveQueueState]);
 
-  const handleExecuteQueue = (id: number) => {
-    setLiveQueueState((prev) => prev.filter((item) => item.id !== id));
-    setCart((prev) => prev.filter((item) => item.id !== id));
-  };
+  const handleGuestSelect = (guest: SelectGuest) => setSelectedGuest(guest);
 
-  const handleGuestSelect = async (guest: SelectGuest) => {
-    setSelectedGuest(guest);
-    setLoading(true);
+  const handleArchiveGuest = async (guest: SelectGuest) => {
+    const confirmed = window.confirm(`Archive guest ${guest.name}?`);
+    if (!confirmed) return;
+
     try {
-      const files = await getFilesByGuestId(guest.id);
-      setGuestFiles(Array.isArray(files) ? files : []);
+      await archiveGuest(guest.id);
+      setGuestList((prev) => {
+        const remaining = prev.filter((item) => item.id !== guest.id);
+        setSelectedGuest((current) =>
+          current?.id === guest.id ? (remaining[0] ?? null) : current,
+        );
+        return remaining;
+      });
+      setLiveQueueState((prev) =>
+        prev.filter((item) => item.guestName !== guest.name),
+      );
     } catch (error) {
-      console.error("Failed to fetch files:", error);
-      setGuestFiles([]);
-    } finally {
-      setLoading(false);
+      console.error("Failed to archive guest:", error);
+      alert("Failed to archive guest. Please try again.");
     }
-    // Populate cart with guest's queue items
-    const guestQueue = liveQueueState.filter(
-      (item) => item.guestName === guest.name,
-    );
-    setCart(
-      guestQueue.map((item) => ({ ...item, editablePrice: item.totalAmount })),
-    );
   };
 
-  const updateCartPrice = (id: number, newPrice: number) => {
+  const updateCartPrice = (requestItemId: number, newPrice: number) => {
     setCart((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, editablePrice: newPrice } : item,
+        item.requestItemId === requestItemId
+          ? { ...item, editablePrice: newPrice }
+          : item,
       ),
     );
   };
 
-  const handleConfirmPayment = () => {
-    setShowOperatorModal(true);
+  const addDraftBillItem = (file: ClientFile) => {
+    setDraftBillItems((prev) => [
+      ...prev,
+      {
+        id: `${file.id}-${Date.now()}-${prev.length}`,
+        fileId: file.id,
+        fileName: file.filename,
+        totalPrice: 0,
+        serviceLabel: "Print Service",
+        serviceSpecs: "",
+      },
+    ]);
   };
 
+  const updateDraftBillItem = (
+    draftId: string,
+    patch: Partial<DraftBillItem>,
+  ) => {
+    setDraftBillItems((prev) =>
+      prev.map((item) => (item.id === draftId ? { ...item, ...patch } : item)),
+    );
+  };
+
+  const removeDraftBillItem = (draftId: string) => {
+    setDraftBillItems((prev) => prev.filter((item) => item.id !== draftId));
+  };
+
+  const handleConfirmPayment = () => setShowOperatorModal(true);
+
   const handleOperatorConfirm = async (operatorName: string) => {
+    if (!selectedGuest) return;
+
     try {
-      const requestIds = cart.map((item) => item.id);
-      await completePayment(requestIds, operatorName);
-      // Clear cart and update queue
+      const changedQueuedItems = cart
+        .filter(
+          (item) =>
+            item.fileId != null &&
+            item.requestItemId != null &&
+            item.editablePrice !== (item.lineAmount ?? item.totalAmount),
+        )
+        .map((item) => ({
+          requestItemId: item.requestItemId,
+          unitPrice: Math.round(
+            (item.editablePrice ?? 0) / (item.quantity ?? 1),
+          ),
+        }));
+
+      if (changedQueuedItems.length > 0) {
+        await updateAdminBillLines(changedQueuedItems);
+      }
+
+      const requestIds = new Set(cart.map((item) => item.id));
+
+      if (draftBillItems.length > 0) {
+        const manualTotal = draftBillItems.reduce(
+          (sum, item) => sum + item.totalPrice,
+          0,
+        );
+        const manualRequest = await createAdminRequest(
+          selectedGuest.id,
+          draftBillItems.map((item) => ({
+            fileId: item.fileId,
+            quantity: 1,
+            unitPrice: item.totalPrice,
+            serviceLabel: item.serviceLabel || "Print Service",
+            serviceSpecs: item.serviceSpecs || null,
+          })),
+          manualTotal,
+        );
+        requestIds.add(manualRequest.id);
+      }
+
+      await completePayment([...requestIds], operatorName);
       setCart([]);
+      setDraftBillItems([]);
       setLiveQueueState((prev) =>
-        prev.filter((item) => !requestIds.includes(item.id)),
+        prev.filter((item) => !requestIds.has(item.id)),
       );
       alert("Payment completed successfully.");
     } catch (error) {
@@ -122,11 +256,60 @@ export default function ClientDashboard({
     }
   };
 
-  const cartTotal = cart.reduce((sum, item) => sum + item.editablePrice, 0);
-
-  const liveQueue = selectedGuest
+  const visibleQueue = selectedGuest
     ? liveQueueState.filter((item) => item.guestName === selectedGuest.name)
     : liveQueueState;
+
+  const orderFeed = useMemo(
+    () =>
+      Object.values(
+        visibleQueue.reduce<Record<number, OrderFeedGroup>>((acc, item) => {
+          if (!acc[item.id]) {
+            acc[item.id] = {
+              id: item.id,
+              guestName: item.guestName,
+              totalAmount: item.totalAmount,
+              files: [],
+              billLines: [],
+            };
+          }
+
+          const order = acc[item.id];
+
+          if (
+            item.fileId != null &&
+            !order.files.some((file) => file.fileId === item.fileId)
+          ) {
+            order.files.push({
+              fileId: item.fileId,
+              fileName: item.fileName || "Unnamed File",
+              mimeType: item.mimeType || null,
+              params: item.params || null,
+            });
+          }
+
+          order.billLines.push({
+            key: `${item.requestItemId}`,
+            title: getQueueItemTitle(item),
+            quantity: item.quantity ?? 1,
+            lineAmount: item.lineAmount ?? item.totalAmount,
+            linkedFileName: item.fileName || null,
+            specs: item.serviceSpecs || null,
+            isManual: item.productId == null,
+          });
+
+          return acc;
+        }, {}),
+      ),
+    [visibleQueue],
+  );
+
+  const draftTotal = draftBillItems.reduce(
+    (sum, item) => sum + item.totalPrice,
+    0,
+  );
+  const queuedTotal = cart.reduce((sum, item) => sum + item.editablePrice, 0);
+  const cartTotal = queuedTotal + draftTotal;
 
   return (
     <>
@@ -138,135 +321,292 @@ export default function ClientDashboard({
       />
       <div className="h-screen bg-[#020202] text-white font-mono pt-16">
         <div className="flex h-[calc(100vh-64px)] overflow-hidden">
-          {/* LEFT PANE */}
           <aside className="w-72 bg-[#070707] border-r border-[#111] p-6 flex flex-col overflow-y-auto">
-            <div className="">
+            <div>
               <h2 className="text-[10px] tracking-[0.3em] uppercase text-[#888] mb-3">
                 Guest_List
               </h2>
               <div className="flex flex-col gap-2">
-                {guests.length === 0 ? (
+                {guestList.length === 0 ? (
                   <span className="text-[#666] text-[9px]">No guests</span>
                 ) : (
-                  guests.map((guest) => (
-                    <button
+                  guestList.map((guest) => (
+                    <div
                       key={guest.id}
-                      onClick={() => handleGuestSelect(guest)}
-                      className={`text-[10px] text-left p-2 rounded-sm transition-colors ${
+                      className={`flex items-center gap-2 rounded-sm ${
                         selectedGuest?.id === guest.id
-                          ? "bg-white text-black font-bold"
-                          : "text-[#aaa] hover:bg-[#111] hover:text-white"
+                          ? "bg-white text-black"
+                          : "bg-transparent"
                       }`}
                     >
-                      {guest.name}
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => handleGuestSelect(guest)}
+                        className={`flex-1 text-[10px] text-left p-2 rounded-sm transition-colors ${
+                          selectedGuest?.id === guest.id
+                            ? "text-black font-bold"
+                            : "text-[#aaa] hover:bg-[#111] hover:text-white"
+                        }`}
+                      >
+                        {guest.name}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleArchiveGuest(guest)}
+                        className={`mr-2 px-2 py-1 text-[9px] border transition-colors ${
+                          selectedGuest?.id === guest.id
+                            ? "border-black text-black hover:bg-black hover:text-white"
+                            : "border-[#444] text-[#888] hover:border-red-400 hover:text-red-400"
+                        }`}
+                      >
+                        ARCHIVE
+                      </button>
+                    </div>
                   ))
                 )}
               </div>
             </div>
           </aside>
 
-          {/* MAIN FEED */}
           <main className="flex-1 p-6 overflow-y-auto">
             <div className="flex justify-between items-end mb-6">
               <div>
                 <h2 className="text-3xl font-black tracking-tighter uppercase">
-                  Queue_Live_Feed
+                  ORDERS_FEED
                 </h2>
                 <p className="text-[9px] text-[#666] uppercase mt-1">
                   {selectedGuest
-                    ? `Guest: ${selectedGuest.name}`
-                    : "Select a guest"}
+                    ? `Selected Guest: ${selectedGuest.name}`
+                    : "All guests"}
                 </p>
-              </div>
-              <div className="flex gap-2">
-                <div className="border border-[#222] px-4 py-1 text-[10px] uppercase font-bold">
-                  {liveQueue.length}_PENDING
-                </div>
-                <div className="border border-[#222] px-4 py-1 text-[10px] uppercase text-[#999]">
-                  2_URGENT
-                </div>
               </div>
             </div>
 
             <div className="space-y-4">
+              {selectedGuest && (
+                <div className="border border-[#222] rounded bg-[#090909] overflow-hidden">
+                  <div className="px-4 py-3 border-b border-[#1b1b1b] flex items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#888]">
+                        UPLOADED_FILES
+                      </h3>
+                      <p className="text-[9px] text-[#555] uppercase mt-1">
+                        Add uploaded files to the cashier bill even without a
+                        product
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-white font-bold">
+                      {guestFiles.length}
+                    </span>
+                  </div>
+
+                  {guestFiles.length === 0 ? (
+                    <p className="text-[#666] text-[9px] p-4">
+                      No uploaded files for this guest
+                    </p>
+                  ) : (
+                    <ul className="divide-y divide-[#141414]">
+                      {guestFiles.map((file) => (
+                        <li
+                          key={file.id}
+                          className="p-4 flex items-center justify-between gap-4"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-[11px] text-[#eee] font-bold uppercase break-all">
+                              {file.filename}
+                            </p>
+                            <p className="text-[9px] text-[#666] uppercase mt-1">
+                              {(file.mimeType || "file").replace("/", " / ")}
+                            </p>
+                          </div>
+                          <div className="flex gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => addDraftBillItem(file)}
+                              className="px-3 py-1 text-[10px] border border-white hover:bg-white hover:text-black transition-colors"
+                            >
+                              ADD_TO_BILL
+                            </button>
+                            <a
+                              href={`/api/files/${file.id}/download`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-3 py-1 text-[10px] border border-[#999] hover:bg-[#999] hover:text-black transition-colors"
+                            >
+                              DOWNLOAD
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                window.open(
+                                  `/api/files/${file.id}/download?inline=1`,
+                                  "_blank",
+                                )
+                              }
+                              className="px-3 py-1 text-[10px] border border-[#999] hover:bg-[#999] hover:text-black transition-colors"
+                            >
+                              PREVIEW
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+
               {loading ? (
                 <div className="text-[#666] text-center py-16">
-                  Loading queue...
+                  Loading guest files...
                 </div>
-              ) : liveQueue.length === 0 ? (
+              ) : orderFeed.length === 0 ? (
                 <div className="text-[#666] text-center py-16">
-                  {selectedGuest
-                    ? "No queued files yet"
-                    : "No live queue items"}
+                  No queued orders found
                 </div>
               ) : (
-                liveQueue.map((item, idx) => (
+                orderFeed.map((order) => (
                   <div
-                    key={`${item.id}-${idx}`}
-                    className="bg-[#0d0d0d] border border-[#222] p-5 flex justify-between items-center gap-6 hover:border-white transition-all"
+                    key={order.id}
+                    className="bg-[#0d0d0d] border border-[#222] p-5 hover:border-white transition-all"
                   >
-                    <div className="flex gap-5 items-center flex-1">
-                      <div className="w-12 h-12 bg-[#111] border border-[#333] flex items-center justify-center uppercase text-[10px] text-[#999]">
-                        {item.itemType === "file"
-                          ? (item.mimeType || "").split("/")[1] || "FILE"
-                          : "PRD"}
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-black uppercase tracking-tight wrap-break-word">
-                          {item.itemType === "file"
-                            ? item.fileName || "Unnamed File"
-                            : item.productName || "Unnamed Product"}
-                        </h3>
-                        <div className="text-[9px] text-[#777] mt-1">
-                          Source: {item.guestName || "-"} | Type:{" "}
-                          {item.itemType.toUpperCase()}
-                          {item.itemType === "file" && item.params
-                            ? ` | Params: ${item.params}`
-                            : ""}
-                          {item.itemType === "product" && item.quantity != null
-                            ? ` | Qty: ${item.quantity}`
-                            : ""}
+                    <div className="flex flex-col gap-5">
+                      <div className="flex items-start justify-between gap-6">
+                        <div>
+                          <p className="text-[9px] text-[#777] uppercase tracking-[0.25em]">
+                            Request #{order.id}
+                          </p>
+                          <h3 className="text-2xl font-black uppercase tracking-tight break-all mt-2">
+                            {order.guestName}
+                          </h3>
+                          <p className="text-[9px] text-[#666] uppercase mt-2">
+                            {order.files.length} file
+                            {order.files.length === 1 ? "" : "s"} linked |{" "}
+                            {order.billLines.length} bill line
+                            {order.billLines.length === 1 ? "" : "s"}
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-[10px] text-[#888] uppercase">
+                            Total
+                          </span>
+                          <div className="text-2xl font-black mt-1">
+                            {formatPeso(order.totalAmount)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] text-[#888] uppercase">
-                        Quote_Value
-                      </span>
-                      <div className="text-2xl font-black mt-1">
-                        ₱{(item.totalAmount / 100).toFixed(2)}
+
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                        <section className="border border-[#1d1d1d] bg-[#090909] p-4">
+                          <h4 className="text-[10px] uppercase tracking-[0.3em] text-[#888] mb-3">
+                            FILES_UPLOADED
+                          </h4>
+                          {order.files.length === 0 ? (
+                            <p className="text-[#666] text-[9px]">
+                              No file linked to this request
+                            </p>
+                          ) : (
+                            <div className="space-y-3">
+                              {order.files.map((file) => (
+                                <div
+                                  key={file.fileId}
+                                  className="border border-[#181818] bg-black/30 p-3"
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                      <p className="text-[11px] font-bold text-[#eee] uppercase break-all">
+                                        {file.fileName}
+                                      </p>
+                                      <p className="text-[9px] text-[#666] uppercase mt-1">
+                                        {(file.mimeType || "file").replace(
+                                          "/",
+                                          " / ",
+                                        )}
+                                      </p>
+                                      {file.params && (
+                                        <p className="text-[9px] text-[#555] mt-2 break-all">
+                                          {file.params}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div className="flex gap-2 shrink-0">
+                                      <a
+                                        href={`/api/files/${file.fileId}/download`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="px-3 py-1 text-[10px] border border-[#999] hover:bg-[#999] hover:text-black transition-colors"
+                                      >
+                                        DOWNLOAD
+                                      </a>
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          window.open(
+                                            `/api/files/${file.fileId}/download?inline=1`,
+                                            "_blank",
+                                          )
+                                        }
+                                        className="px-3 py-1 text-[10px] border border-[#999] hover:bg-[#999] hover:text-black transition-colors"
+                                      >
+                                        PREVIEW
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </section>
+
+                        <section className="border border-[#1d1d1d] bg-[#090909] p-4">
+                          <h4 className="text-[10px] uppercase tracking-[0.3em] text-[#888] mb-3">
+                            BILL_LINES
+                          </h4>
+                          {order.billLines.length === 0 ? (
+                            <p className="text-[#666] text-[9px]">
+                              No bill lines in this request
+                            </p>
+                          ) : (
+                            <div className="space-y-3">
+                              {order.billLines.map((line) => (
+                                <div
+                                  key={line.key}
+                                  className="border border-[#181818] bg-black/30 p-3 flex items-start justify-between gap-4"
+                                >
+                                  <div className="min-w-0">
+                                    <p className="text-[11px] font-bold text-[#eee] uppercase break-all">
+                                      {line.title}
+                                    </p>
+                                    <p className="text-[9px] text-[#666] uppercase mt-1">
+                                      Qty {line.quantity} |{" "}
+                                      {line.isManual
+                                        ? "Manual print line"
+                                        : "Catalog line"}
+                                    </p>
+                                    <p className="text-[9px] text-[#555] uppercase mt-2 break-all">
+                                      {line.linkedFileName
+                                        ? `Linked file: ${line.linkedFileName}`
+                                        : "No file linked"}
+                                    </p>
+                                    {line.specs && (
+                                      <p className="text-[9px] text-[#555] mt-1 break-all">
+                                        {line.specs}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-[9px] text-[#666] uppercase">
+                                      Line Total
+                                    </p>
+                                    <p className="text-lg font-black text-white mt-1">
+                                      {formatPeso(line.lineAmount)}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </section>
                       </div>
-                      <button
-                        className="mt-3 w-full border border-white px-4 py-2 text-[10px] uppercase font-black hover:bg-white hover:text-black transition-colors"
-                        onClick={() => handleExecuteQueue(item.id)}
-                      >
-                        Execute_Quote
-                      </button>
-                      {item.itemType === "file" && item.fileId && (
-                        <div className="mt-2 flex gap-2">
-                          <a
-                            href={`/api/files/${item.fileId}/download`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="px-3 py-1 text-[10px] border border-[#999] hover:bg-[#999] hover:text-black transition-colors"
-                          >
-                            DOWNLOAD_FILE
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              window.open(
-                                `/api/files/${item.fileId}/download?inline=1`,
-                                "_blank",
-                              )
-                            }
-                            className="px-3 py-1 text-[10px] border border-[#999] hover:bg-[#999] hover:text-black transition-colors"
-                          >
-                            PRINT_FILE
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))
@@ -274,45 +614,158 @@ export default function ClientDashboard({
             </div>
           </main>
 
-          {/* RIGHT UTILITY */}
-          <aside className="w-80 bg-[#060606] border-l border-[#111] p-6 flex flex-col overflow-y-auto">
+          <aside className="w-96 bg-[#060606] border-l border-[#111] p-6 flex flex-col overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xs uppercase tracking-widest text-[#999]">
-                Utility_Supply
+                Cashier_Bill
               </h3>
-              <span className="text-[#666]">SEARCH_DB</span>
+              <span className="text-[#666]">
+                {selectedGuest ? selectedGuest.name : "No guest"}
+              </span>
             </div>
 
             <div className="border-t border-[#222] pt-4">
               <div className="text-[10px] uppercase text-[#888] tracking-widest mb-2 flex justify-between">
-                <span>Active_Basket</span>
-                <span className="text-red-500 cursor-pointer">Wipe_Data</span>
+                <span>Queued_Items</span>
+                <span>{cart.length}</span>
               </div>
 
-              <div className="space-y-2 mb-4">
+              <div className="space-y-2 mb-5">
                 {cart.length === 0 ? (
-                  <p className="text-[#666] text-[9px]">Cart empty</p>
+                  <p className="text-[#666] text-[9px]">No queued bill lines</p>
                 ) : (
                   cart.map((item, idx) => (
                     <div
-                      key={`${item.id}-${idx}`}
-                      className="flex justify-between items-center text-[9px] gap-2"
+                      key={`${item.requestItemId}-${idx}`}
+                      className="border border-[#1b1b1b] bg-[#0a0a0a] p-3"
                     >
-                      <span className="flex-1 truncate">
-                        {item.itemType === "file"
-                          ? item.fileName || "Unnamed File"
-                          : item.productName || "Unnamed Product"}
-                      </span>
-                      <input
-                        type="number"
-                        value={(item.editablePrice / 100).toFixed(2)}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value) * 100;
-                          updateCartPrice(item.id, isNaN(value) ? 0 : value);
-                        }}
-                        className="w-16 bg-[#111] border border-[#333] text-[9px] px-1 py-0.5 text-right"
-                        step="0.01"
-                      />
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <span className="block text-[10px] text-white font-bold uppercase break-all">
+                            {getQueueItemTitle(item)}
+                          </span>
+                          <span className="block text-[#666] uppercase mt-1 text-[9px]">
+                            {item.fileId != null
+                              ? "Print cost editable"
+                              : "Product price fixed"}
+                          </span>
+                          {item.fileName && (
+                            <span className="block text-[#555] mt-1 text-[9px] uppercase break-all">
+                              File: {item.fileName}
+                            </span>
+                          )}
+                        </div>
+                        {item.fileId != null ? (
+                          <input
+                            type="number"
+                            value={(item.editablePrice / 100).toFixed(2)}
+                            onChange={(e) => {
+                              const value = Math.round(
+                                parseFloat(e.target.value || "0") * 100,
+                              );
+                              updateCartPrice(
+                                item.requestItemId,
+                                Number.isNaN(value) ? 0 : value,
+                              );
+                            }}
+                            className="w-24 bg-[#111] border border-[#333] text-[9px] px-2 py-1 text-right"
+                            step="0.01"
+                          />
+                        ) : (
+                          <span className="w-24 text-right text-[#aaa] font-bold text-[10px]">
+                            {formatPeso(item.lineAmount ?? item.totalAmount)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="text-[10px] uppercase text-[#888] tracking-widest mb-2 flex justify-between">
+                <span>Draft_Print_Lines</span>
+                <span>{draftBillItems.length}</span>
+              </div>
+
+              <div className="space-y-3 mb-4">
+                {draftBillItems.length === 0 ? (
+                  <p className="text-[#666] text-[9px]">
+                    Add uploaded files from the main feed to build a manual
+                    print bill
+                  </p>
+                ) : (
+                  draftBillItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="border border-[#1b1b1b] bg-[#0a0a0a] p-3 space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-[10px] text-white font-bold uppercase break-all">
+                            {item.fileName}
+                          </p>
+                          <p className="text-[9px] text-[#666] uppercase mt-1">
+                            File-only cashier charge
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeDraftBillItem(item.id)}
+                          className="text-[9px] text-red-400 border border-red-400 px-2 py-1 hover:bg-red-400 hover:text-black transition-colors"
+                        >
+                          REMOVE
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-2">
+                        <input
+                          type="text"
+                          value={item.serviceLabel}
+                          onChange={(e) =>
+                            updateDraftBillItem(item.id, {
+                              serviceLabel: e.target.value,
+                            })
+                          }
+                          className="bg-[#111] border border-[#333] px-2 py-2 text-[10px] uppercase"
+                          placeholder="SERVICE LABEL"
+                        />
+                        <input
+                          type="text"
+                          value={item.serviceSpecs}
+                          onChange={(e) =>
+                            updateDraftBillItem(item.id, {
+                              serviceSpecs: e.target.value,
+                            })
+                          }
+                          className="bg-[#111] border border-[#333] px-2 py-2 text-[10px]"
+                          placeholder="short colored, back-to-back..."
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-2">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={(item.totalPrice / 100).toFixed(2)}
+                          onChange={(e) => {
+                            const value = Math.round(
+                              parseFloat(e.target.value || "0") * 100,
+                            );
+                            updateDraftBillItem(item.id, {
+                              totalPrice: Number.isNaN(value) ? 0 : value,
+                            });
+                          }}
+                          className="bg-[#111] border border-[#333] px-2 py-2 text-[10px]"
+                          placeholder="TOTAL PRICE"
+                        />
+                      </div>
+
+                      <div className="flex justify-between items-center text-[10px] uppercase text-[#aaa]">
+                        <span>Draft Line Total</span>
+                        <span className="font-bold">
+                          {formatPeso(item.totalPrice)}
+                        </span>
+                      </div>
                     </div>
                   ))
                 )}
@@ -324,11 +777,11 @@ export default function ClientDashboard({
                     Total_Due
                   </span>
                   <span className="text-2xl font-black">
-                    ₱{(cartTotal / 100).toFixed(2)}
+                    {formatPeso(cartTotal)}
                   </span>
                 </div>
                 <button
-                  disabled={cart.length === 0}
+                  disabled={cart.length === 0 && draftBillItems.length === 0}
                   onClick={handleConfirmPayment}
                   className="w-full bg-black text-white py-3 text-[10px] uppercase font-bold hover:bg-[#111] disabled:opacity-50 disabled:cursor-not-allowed"
                 >

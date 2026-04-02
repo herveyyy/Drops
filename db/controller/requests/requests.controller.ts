@@ -34,6 +34,17 @@ export class RequestsController implements IRequests {
     }
   }
 
+  async updateRequestItemsPricing(
+    items: { requestItemId: number; unitPrice: number }[],
+  ): Promise<void> {
+    try {
+      return await this.requestService.updateRequestItemsPricing(items);
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to update request pricing");
+    }
+  }
+
   async completePayment(
     requestIds: number[],
     operatorName: string,

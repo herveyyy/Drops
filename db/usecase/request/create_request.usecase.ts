@@ -30,13 +30,45 @@ export class CreateRequestUsecase {
 
       const request = requestResult[0];
 
-      // Insert all request items
+      // Insert all request items. fileId is optional and omitted when not set (product-only item)
       if (items.length > 0) {
         await this.db.insert(requestItems).values(
-          items.map((item) => ({
-            ...item,
-            requestId: request.id,
-          })),
+          items.map((item) => {
+            const payload: {
+              requestId: number;
+              productId?: number | null;
+              quantity: number;
+              fileId?: number | null;
+              unitPrice?: number | null;
+              serviceLabel?: string | null;
+              serviceSpecs?: string | null;
+            } = {
+              requestId: request.id,
+              quantity: item.quantity ?? 1,
+            };
+
+            if (item.productId != null) {
+              payload.productId = item.productId;
+            }
+
+            if (item.fileId != null) {
+              payload.fileId = item.fileId;
+            }
+
+            if (item.unitPrice != null) {
+              payload.unitPrice = item.unitPrice;
+            }
+
+            if (item.serviceLabel != null) {
+              payload.serviceLabel = item.serviceLabel;
+            }
+
+            if (item.serviceSpecs != null) {
+              payload.serviceSpecs = item.serviceSpecs;
+            }
+
+            return payload;
+          }),
         );
       }
 

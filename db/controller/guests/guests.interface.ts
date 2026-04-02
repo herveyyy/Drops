@@ -5,4 +5,5 @@ export interface IGuests {
   getGuestById(id: number): Promise<SelectGuest | null>;
   getGuestsWithRequestsToday(): Promise<SelectGuest[]>;
   getAllGuests(): Promise<SelectGuest[]>;
+  archiveGuest(id: number): Promise<void>;
 }
