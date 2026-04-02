@@ -21,7 +21,7 @@ interface CartItem {
 }
 
 function formatPrice(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`;
+  return `PHP ${(cents / 100).toFixed(2)}`;
 }
 
 export default function ClientCatalog({
@@ -179,21 +179,12 @@ export default function ClientCatalog({
           </div>
 
           {/* Product Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1  gap-6">
             {products.map((product) => (
               <div
                 key={product.id}
                 className="border border-[#222] bg-[#0a0a0a] p-6 hover:border-white transition-colors flex flex-col gap-6 relative group"
               >
-                {/* Image placeholder with scanlines */}
-                <div className="h-40 bg-[#111] border border-[#333] flex items-center justify-center group-hover:border-[#666] transition-colors relative overflow-hidden">
-                  <span className="text-[#333] text-[10px] tracking-widest font-bold uppercase z-10">
-                    IMAGE_FEED_UNAVAILABLE
-                  </span>
-                  <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px)] bg-size-[100%_4px] pointer-events-none"></div>
-                </div>
-
-                {/* Product info */}
                 <div className="flex flex-col gap-2">
                   <span className="text-sm font-bold tracking-[0.15em] uppercase text-white">
                     {product.name.toUpperCase().replace(/\s/g, "_")}
@@ -237,7 +228,7 @@ export default function ClientCatalog({
       />
       {/* ─── Receipt Preview Modal ─────────────────────────────────── */}
       {showReceipt && (
-        <div className="absolute inset-0 z-100 bg-[#af8c8c] flex flex-col animate-in slide-in-from-bottom duration-500 ease-out">
+        <div className="absolute inset-0 z-100 bg-[#050505] flex flex-col animate-in slide-in-from-bottom duration-500 ease-out">
           {/* Full Screen Header */}
           <div className="sticky top-0 z-10 bg-[#050505]/80 backdrop-blur-md border-b border-[#222] p-6 sm:p-8 flex flex-col gap-4">
             <div className="flex justify-between items-start max-w-4xl mx-auto w-full">

@@ -24,7 +24,7 @@ export default function BottomNav({
   const hasItems = cart.length > 0;
 
   function formatPrice(cents: number): string {
-    return `$${((cents || 0) / 100).toFixed(2)}`;
+    return `PHP ${((cents || 0) / 100).toFixed(2)}`;
   }
 
   return (
