@@ -1,14 +1,10 @@
-import { redirect } from "next/navigation";
+import { initializeGuest } from "@/app/actions";
 
 export default function TerminalInit() {
   return (
     <form 
       className="min-h-[100dvh] bg-[#070707] text-white font-mono flex flex-col relative overflow-hidden" 
-      action={async (formData) => {
-        "use server";
-        console.log("Onboarding:", formData.get("subject_name"));
-        redirect("/upload");
-      }}
+      action={initializeGuest}
     >
       {/* Top Bar */}
       <header className="flex justify-between items-center p-5 sm:p-8 text-[10px] sm:text-[11px] text-[#666] tracking-[0.2em] font-bold uppercase">
