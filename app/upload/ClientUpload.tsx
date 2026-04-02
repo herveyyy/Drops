@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import Link from "next/link";
 import { refreshUploadPage } from "@/app/actions/file.actions";
 import type { SelectFile } from "@/lib/types/file.types";
-import BottomNav from "@/components/BottomNav";
 
 interface ClientUploadProps {
   guestName: string;
@@ -176,9 +176,10 @@ export default function ClientUpload({
             </p>
           </div>
 
-          <label
-            htmlFor="upload-input"
-            className="bg-white text-black w-full py-4 font-bold text-[11px] sm:text-xs tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#d0d0d0] transition-colors uppercase cursor-pointer"
+          <button
+            type="button"
+            onClick={handleFileSelect}
+            className="bg-white text-black w-full py-4 font-bold text-[11px] sm:text-xs tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#d0d0d0] transition-colors uppercase border-none cursor-pointer"
           >
             <svg
               width="16"
@@ -195,7 +196,7 @@ export default function ClientUpload({
               <line x1="12" y1="3" x2="12" y2="15"></line>
             </svg>
             BEGIN_UPLOAD
-          </label>
+          </button>
 
           <div className="absolute top-4 right-4 hidden sm:flex items-center gap-2 border border-[#222] px-3 py-1.5 bg-black">
             <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
@@ -242,29 +243,28 @@ export default function ClientUpload({
 
           {/* Hidden file input */}
           <input
-            id="upload-input"
             ref={fileInputRef}
             type="file"
-            className="opacity-0 absolute -z-10 w-px h-px"
+            className="hidden"
             accept=".pdf,.jpg,.jpeg,.png,.webp,.ai"
             multiple
             onChange={handleInputChange}
           />
 
           {/* Dropzone */}
-          <label
-            htmlFor="upload-input"
+          <div
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            className={`border border-dashed transition-all duration-200 p-12 sm:p-20 flex flex-col items-center justify-center gap-4 cursor-pointer mt-2 w-full ${
+            onClick={handleFileSelect}
+            className={`border border-dashed transition-all duration-200 p-12 sm:p-20 flex flex-col items-center justify-center gap-4 cursor-pointer mt-2 ${
               isDragging
                 ? "border-white bg-[#151515] scale-[1.01]"
                 : "border-[#333] bg-[#0a0a0a] hover:bg-[#111]"
             }`}
           >
             <div
-              className={`border p-3 transition-colors mx-auto w-fit ${isDragging ? "border-white text-white" : "border-[#444] text-[#a0a0a0]"}`}
+              className={`border p-3 transition-colors ${isDragging ? "border-white text-white" : "border-[#444] text-[#a0a0a0]"}`}
             >
               <svg
                 width="24"
@@ -288,7 +288,7 @@ export default function ClientUpload({
                 SUPPORTED: PDF JPG PNG AI // MAX: 50MB
               </span>
             </div>
-          </label>
+          </div>
 
           {/* Uploading indicators */}
           {uploading.length > 0 && (
@@ -366,7 +366,55 @@ export default function ClientUpload({
         </section>
       </main>
 
-      <BottomNav />
+      {/* Bottom Navigation Grid */}
+      <nav className="fixed bottom-0 w-full border-t border-[#222] bg-[#050505] flex z-50">
+        <Link
+          href="/upload"
+          className="flex-1 py-4 flex flex-col items-center justify-center gap-2 bg-white text-black border-t-2 border-white"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <span className="text-[8px] sm:text-[9px] font-bold tracking-[0.2em] uppercase">
+            UPLOAD
+          </span>
+        </Link>
+
+        <Link
+          href="/catalog"
+          className="flex-1 py-4 flex flex-col items-center justify-center gap-2 text-[#666] hover:text-white transition-colors bg-black"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span className="text-[8px] sm:text-[9px] font-bold tracking-[0.2em] uppercase">
+            CATALOG
+          </span>
+        </Link>
+      </nav>
 
       {/* Done Modal */}
       {showDoneModal && (

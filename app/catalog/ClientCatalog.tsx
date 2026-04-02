@@ -219,29 +219,12 @@ export default function ClientCatalog({
             )}
           </div>
         </section>
-
-        {/* Cart preview strip */}
-        {cart.length > 0 && (
-          <section className="border absolute  z-50 border-[#333] bg-[#0a0a0a] p-4 sm:p-6 flex justify-between items-center">
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aaa]">
-                {cart.length} ITEM{cart.length !== 1 ? "S" : ""} IN REQUEST
-              </span>
-              <span className="text-lg font-bold tracking-wider text-white">
-                {formatPrice(totalAmount)}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowReceipt(true)}
-              className="bg-white text-black px-6 py-3 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-[#ccc] transition-colors cursor-pointer border-none"
-            >
-              REVIEW_REQUEST
-            </button>
-          </section>
-        )}
       </main>
-      <BottomNav />
+      <BottomNav
+        cart={cart}
+        totalAmount={totalAmount}
+        setShowReceipt={setShowReceipt}
+      />
       {/* ─── Receipt Preview Modal ─────────────────────────────────── */}
       {showReceipt && (
         <div className="fixed inset-0 z-100lex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
