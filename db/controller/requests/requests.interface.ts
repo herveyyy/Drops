@@ -6,4 +6,5 @@ export interface IRequests {
     totalAmount: number,
     items: Omit<InsertRequestItem, "requestId">[],
   ): Promise<SelectRequest>;
+  getLiveQueue(): Promise<unknown>;
 }

@@ -19,6 +19,7 @@ import { ProductService } from "@/db/service/product.service";
 import { RequestsController } from "@/db/controller/requests/requests.controller";
 import { CreateRequestUsecase } from "@/db/usecase/request/create_request.usecase";
 import { RequestService } from "@/db/service/request.service";
+import { GetRequestsUseCase } from "@/db/usecase/request/get_requests.usecase";
 
 export async function createUserController(): Promise<UsersController> {
   return new UsersController(new UserService(new GetUserByCredsUsecase()));
@@ -43,5 +44,7 @@ export async function createProductsController(): Promise<ProductsController> {
 }
 
 export async function createRequestsController(): Promise<RequestsController> {
-  return new RequestsController(new RequestService(new CreateRequestUsecase()));
+  return new RequestsController(
+    new RequestService(new CreateRequestUsecase(), new GetRequestsUseCase()),
+  );
 }

@@ -7,7 +7,8 @@ const db = drizzle(process.env.DB_FILE_NAME!);
 const SEED_PRODUCTS = [
   {
     name: "Premium Photo Paper",
-    description: "High-quality glossy 200GSM photo paper. Vivid colors, sharp detail.",
+    description:
+      "High-quality glossy 200GSM photo paper. Vivid colors, sharp detail.",
     price: 1299, // $12.99
     specs: "200GSM // GLOSSY // A4",
   },
@@ -19,13 +20,15 @@ const SEED_PRODUCTS = [
   },
   {
     name: "Canvas Poster Print",
-    description: "Museum-grade canvas stretched on wooden frame. Various sizes.",
+    description:
+      "Museum-grade canvas stretched on wooden frame. Various sizes.",
     price: 4500, // $45.00
     specs: "CANVAS // STRETCHED // 18x24in",
   },
   {
     name: "Vinyl Sticker Sheet",
-    description: "Waterproof vinyl stickers. Die-cut to your design. Sheet of 50.",
+    description:
+      "Waterproof vinyl stickers. Die-cut to your design. Sheet of 50.",
     price: 1800, // $18.00
     specs: "VINYL // WATERPROOF // 50 UNITS",
   },

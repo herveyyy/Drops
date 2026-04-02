@@ -25,3 +25,8 @@ export async function submitOrderRequest(
 
   return request;
 }
+export async function fetchLiveQueue() {
+  const controller = await createRequestsController();
+  const liveQueue = await controller.getLiveQueue();
+  return liveQueue;
+}

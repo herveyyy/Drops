@@ -21,4 +21,12 @@ export class RequestsController implements IRequests {
       throw new Error("Failed to create request");
     }
   }
+  async getLiveQueue(): Promise<unknown> {
+    try {
+      return await this.requestService.getLiveQueue();
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to fetch live queue");
+    }
+  }
 }

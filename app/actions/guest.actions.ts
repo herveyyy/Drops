@@ -38,3 +38,8 @@ export async function getGuestSession() {
   const controller = await createGuestsController();
   return controller.getGuestById(guestId);
 }
+
+export async function getAllGuests() {
+  const controller = await createGuestsController();
+  return controller.getAllGuests();
+}

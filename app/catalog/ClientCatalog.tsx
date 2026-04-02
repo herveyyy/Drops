@@ -166,7 +166,7 @@ export default function ClientCatalog({
       </header>
 
       {/* Main */}
-      <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 pt-8 flex flex-col gap-10">
+      <main className="flex-1 max-w-300 w-full mx-auto px-4 sm:px-6 pt-8 flex flex-col gap-10">
         {/* Catalog Header */}
         <section className="flex flex-col gap-6">
           <div className="flex justify-between items-end border-b border-[#222] pb-2">

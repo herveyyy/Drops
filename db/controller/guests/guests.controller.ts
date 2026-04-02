@@ -22,4 +22,13 @@ export class GuestsController implements IGuests {
       throw new Error("Failed to get guest by id");
     }
   }
+
+  async getAllGuests(): Promise<SelectGuest[]> {
+    try {
+      return await this.guestService.getAllGuests();
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to get all guests");
+    }
+  }
 }

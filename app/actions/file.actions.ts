@@ -20,3 +20,8 @@ export async function getGuestFiles() {
 export async function refreshUploadPage() {
   revalidatePath("/upload");
 }
+
+export async function getFilesByGuestId(guestId: number) {
+  const controller = await createFilesController();
+  return controller.getFilesByGuestId(guestId);
+}
